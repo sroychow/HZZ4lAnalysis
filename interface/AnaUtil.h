@@ -16,7 +16,7 @@ class TProfile;
 namespace AnaUtil {
   // Templated functioned must be defined in the header itself
   void tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters=" ");
-  void bit_print(int value, int pos=32, ostream& os=std::cout);
+  void bit_print(int value, int pos=32, std::ostream& os=std::cout);
   template <typename T>
   T deltaPhiT(T phi1, T phi2) {
     T result = phi1 - phi2;
@@ -31,7 +31,7 @@ namespace AnaUtil {
   void buildList(const std::vector<std::string>& tokens, std::vector<std::string>& list);
   void buildMap(const std::vector<std::string>& tokens, std::map<std::string, int>& hmap);
   void storeCuts(const std::vector<std::string>& tokens, std::map<std::string, std::map<std::string, double>* >& hmap);
-  void showCuts(const std::map<std::string, std::map<std::string, double> >& hmap, ostream& os=std::cout);
+  void showCuts(const std::map<std::string, std::map<std::string, double> >& hmap, std::ostream& os=std::cout);
   // ------------------------------------------------------------------------
   // Convenience routine for filling 1D histograms. We rely on root to keep 
   // track of all the histograms that are booked all over so that we do not 

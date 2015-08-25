@@ -31,6 +31,7 @@ using std::map;
 using std::pair;
 using std::setprecision;
 using std::setw;
+using std::ostream;
 
 namespace HZZ4lUtil {
   double getEleRhoEffectiveArea(double eta) {

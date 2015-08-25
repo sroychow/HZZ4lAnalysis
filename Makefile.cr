@@ -1,5 +1,5 @@
 UNAME  = $(shell uname)
-EXE    = crsel
+EXE    = crslctn
  
 VPATH  = .:./interface
 vpath %.h ./interface
@@ -14,32 +14,31 @@ OBJS   = $(patsubst %.$(CSUF), %.o, $(SRCS))
 
 LDFLAGS  = -g
 SOFLAGS  = -shared 
-CXXFLAGS = -I./interface -I./
+CXXFLAGS = -I./interface -I$(CMSSW_BASE)/src/ZZMatrixElement/MEMCalculators/interface/ -I./
 
 CXX       = g++
 CXXFLAGS += -g -Wall -Wno-deprecated
-LIBS = 
+LIBS =  -L$(CMSSW_BASE)/lib/$(SCRAM_ARCH) -lZZMatrixElementMEMCalculators
 HDRS_DICT = interface/PhysicsObjects.h interface/LinkDef.h
 
 bin: $(EXE) 
 all: 
 	make cint 
 	make bin 
-cint: $(DICTC) 
+cling: $(DICTC) 
  
 $(EXE): $(OBJS) src/Dict.o
 	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS) `root-config --libs`  -lTMVA
  
 $(DICTC): $(HDRS_DICT)
-	echo "Generating dictionary $(DICTC) and $(DICTH) ..."
-	rootcint -f $@ $(CXXFLAGS) $^
-	perl -pi -e 's#interface/##' $(DICTH)
-	mv $(DICTC) src/ 
-	mv $(DICTH) interface/
+	@echo "Generating dictionary $(DICTC) ..."
+	rootcling -f $@ -rmf interface/AnalysisSpaceTreeMaker_xr.rootmap -c $(CXXFLAGS) $^
+	@mv $(DICTC) src/ 
+	@mv Dict_rdict.pcm src/	 
  
 # Create object files
 %.o : %.$(CSUF)
-	$(CXX) $(CXXFLAGS) -std=c++11 `root-config --cflags` -o $@ -c $<
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++11 `root-config --cflags` -o $@ -c $<
 
 # makedepend
 depend: $(SRCS:.$(CSUF)=.$(CSUF).dep)
@@ -53,4 +52,4 @@ include Makefile.dep
 # Clean 
 .PHONY   : clean 
 clean : 
-	@-rm $(OBJS) $(EXE) interface/$(DICTH) src/$(DICTC) src/Dict.o
+	@-rm $(OBJS) $(EXE) src/$(DICTC) src/Dict.o

@@ -40,6 +40,9 @@ using std::setprecision;
 using std::setw;
 using std::setiosflags;
 using std::resetiosflags;
+using std::ostream;
+using std::ifstream;
+using std::ofstream;
 
 using namespace vhtm;
 

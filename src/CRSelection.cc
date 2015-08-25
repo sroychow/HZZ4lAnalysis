@@ -42,6 +42,7 @@ using std::pair;
 using std::setprecision;
 using std::setw;
 using std::stoi;
+using std::ostream;
 
 using namespace vhtm;
 
@@ -878,7 +879,7 @@ bool CRSelection::readJob(const string& jobFile, int& nFiles)
   static const int BUF_SIZE = 256;
 
   // Open the file containing the datacards
-  ifstream fin(jobFile.c_str(), std::ios::in);    
+  std::ifstream fin(jobFile.c_str(), std::ios::in);    
   if (!fin) {
     cerr << "Input File: " << jobFile << " could not be opened!" << endl;
     return false;

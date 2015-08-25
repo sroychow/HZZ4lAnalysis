@@ -57,7 +57,7 @@ class PhysicsObjSelector: public AnaBase {
   bool ZmumuIso(ZCandidate& Za, const std::vector<TLorentzVector>& fsrVec, double vetoCone=0.01, double isoCone=0.4, bool verbose=false) const;
   bool ZeeIso(ZCandidate& Za, const std::vector<TLorentzVector>& fsrVec, double vetoCone=0.08, double isoCone=0.4, bool verbose=false) const;
   void ZZisoMass(ZCandidate& Za, ZCandidate& Zb, std::vector<std::pair<ZCandidate, ZCandidate> >& ZZVec);
-  void dumpEvent(bool dumpGen=false, bool showEvent=false, ostream& os=std::cout) const;
+  void dumpEvent(bool dumpGen=false, bool showEvent=false, std::ostream& os=std::cout) const;
 
  private:
   bool dumpEvent_;

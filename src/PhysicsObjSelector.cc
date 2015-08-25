@@ -36,6 +36,7 @@ using std::map;
 using std::pair;
 using std::setprecision;
 using std::setw;
+using std::ostream;
 
 PhysicsObjSelector::PhysicsObjSelector()
   : AnaBase(),

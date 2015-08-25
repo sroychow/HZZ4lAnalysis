@@ -171,8 +171,8 @@ public:
   int nEvents() const {return nEvents_;}
   int firstEvent() const {return firstEvt_;}
   int lastEvent() const {return lastEvt_;}
-  ofstream& fLog() {return fLog_;}
-  ofstream& evLog() {return evLog_;}
+  std::ofstream& fLog() {return fLog_;}
+  std::ofstream& evLog() {return evLog_;}
 
   bool isMC() const {return isMC_;}
   bool isSignal() const {return isSignal_;}
@@ -229,8 +229,8 @@ private:
 
   int nEvents_;
 
-  ofstream fLog_;   
-  ofstream evLog_;   
+  std::ofstream fLog_;   
+  std::ofstream evLog_;   
 
   bool isMC_;
   bool isSignal_;

@@ -67,7 +67,7 @@ public:
   bool useEventList_;
   bool selectEvType_;
   int evtype_;
-  ofstream syncDumpf_;
+  std::ofstream syncDumpf_;
 };
 #endif
 

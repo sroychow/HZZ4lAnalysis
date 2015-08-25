@@ -23,6 +23,7 @@ using std::cerr;
 using std::endl;
 using std::ios;
 using std::setw;
+using std::ostream;
 
 using std::string;
 using std::vector;
