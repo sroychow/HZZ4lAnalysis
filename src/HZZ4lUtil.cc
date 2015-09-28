@@ -108,15 +108,16 @@ namespace HZZ4lUtil {
   	    centralCut);
   }
   bool electronBDT(const vhtm::Electron& electron) {
+
     double scEta = std::fabs(electron.scEta);
     double elePt = electron.pt;
     double BDT = electron.BDT;
-    bool isBDT = (elePt <= 10 && ((scEta < 0.8 && BDT > -0.202)                     ||
-  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.444) ||
-  				  (scEta >= 1.479 && BDT > 0.264)))                 ||
-                 (elePt >  10 && ((scEta < 0.8 && BDT > -0.110)                     ||
-  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.284) ||
-  				  (scEta >= 1.479 && BDT > -0.212)));
+    bool isBDT = (elePt <= 10 && ((scEta < 0.8 && BDT > -0.586)                     ||
+  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.712) ||
+  				  (scEta >= 1.479 && BDT > -0.662)))                 ||
+                 (elePt >  10 && ((scEta < 0.8 && BDT > -0.652)                     ||
+  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.701) ||
+  				  (scEta >= 1.479 && BDT > -0.350)));
     return isBDT;
   }
   void printZCandidate(const ZCandidate& Za, const std::string& tag, std::ostream& os) {

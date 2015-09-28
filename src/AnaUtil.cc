@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <fstream>
 
 #include "TDirectory.h"
 #include "TMath.h"
@@ -24,6 +25,7 @@ using std::endl;
 using std::ios;
 using std::setw;
 using std::ostream;
+using std::ifstream;
 
 using std::string;
 using std::vector;
@@ -93,6 +95,27 @@ namespace AnaUtil {
          it != tokens.end(); ++it) {
       list.push_back(*it);       
     }
+  }
+  void buildList(const string& filename, vector<string>& list) {
+    static const int BUF_SIZE = 256;
+
+    // Open the file containing the input ROOT files
+    ifstream fin(filename.c_str(), ios::in);    
+    if (!fin) {
+      cerr << "Input File: " << filename << " could not be opened!" << endl;
+      return;
+    }
+    char buf[BUF_SIZE];
+    while (fin.getline(buf, BUF_SIZE, '\n')) {  // Pops off the newline character
+      string line(buf);
+      if (line.empty() || line == "START") continue;   
+
+      // enable '#' and '//' style comments
+      if (line.substr(0,1) == "#" || line.substr(0,2) == "//") continue;
+      list.push_back(line);
+    } 
+    // Close the file
+    fin.close();
   }
   void buildMap(const vector<string>& tokens, map<string, int>& hmap) {
     string key = tokens.at(1) + "-" + tokens.at(2) + "-" + tokens.at(3);

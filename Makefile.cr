@@ -18,7 +18,7 @@ CXXFLAGS = -I./interface -I$(CMSSW_BASE)/src/ZZMatrixElement/MEMCalculators/inte
 
 CXX       = g++
 CXXFLAGS += -g -Wall -Wno-deprecated
-LIBS =  -L$(CMSSW_BASE)/lib/$(SCRAM_ARCH) -lZZMatrixElementMEMCalculators
+LIBS = -L$(CMSSW_BASE)/lib/$(SCRAM_ARCH) -lZZMatrixElementMEMCalculators
 HDRS_DICT = interface/PhysicsObjects.h interface/LinkDef.h
 
 bin: $(EXE) 

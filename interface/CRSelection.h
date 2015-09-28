@@ -65,6 +65,7 @@ public:
   
   bool dumpGenInfo_;
   bool useEventList_;
+  std::string syncDumpFile_;
   bool selectEvType_;
   int evtype_;
   std::ofstream syncDumpf_;

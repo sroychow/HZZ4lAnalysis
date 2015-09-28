@@ -366,12 +366,15 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
       useTrueNInt_ = (std::stoi(value.c_str()) > 0) ? true : false;
     else if (key == "trigPathList") 
       AnaUtil::buildList(tokens, trigPathList_);
+    else if (key == "inputFileList") 
+      AnaUtil::buildList(value, fileList_);
     else if (key == "inputFile") 
       AnaUtil::buildList(tokens, fileList_);
     else if (key == "eventId" && tokens.size() == 4) 
       AnaUtil::buildMap(tokens, eventIdMap_);
     else
       AnaUtil::storeCuts(tokens, hmap);
+
     tokens.clear();
   }
   if (!isMC_) usePUWt_ = false;

@@ -56,7 +56,6 @@ CRSelection::CRSelection()
     selectEvType_(false),
     evtype_(-1)
 {
-  syncDumpf_.open("CRsyncDumpFile.txt");
 }
 // ----------
 // Destructor
@@ -70,6 +69,8 @@ bool CRSelection::beginJob()
 { 
   // Open the output ROOT file (in AnaBase)
   PhysicsObjSelector::beginJob();
+
+  syncDumpf_.open(syncDumpFile_);
 
   histf()->cd();
   histf()->mkdir("CRSelection");
@@ -196,8 +197,7 @@ void CRSelection::eventLoop()
     if (useEventList_ && eventIdMap().size()) {
       std::ostringstream mkey;
       mkey << run << "-" << lumis << "-" << event;
-      if (eventIdMap().find(mkey.str()) == eventIdMap().end()) continue;
-      //if (eventIdMap().find(mkey.str()) == eventIdMap().end()) continue;
+      if (eventIdMap().find(mkey.str()) == eventIdMap().end()) continue;  // not found
     }
     
     histf()->cd();
@@ -225,6 +225,12 @@ void CRSelection::eventLoop()
     
     // main analysis object selection
     findObjects(puevWt_);
+
+    // dump the event and skip the rest
+    if (0) {
+      showEventNumber();
+      dumpEvent();
+    }
     
     // access selected objects 
     const auto& tightElePhotonPairVec = getTightElePhotonPairList();
@@ -237,6 +243,7 @@ void CRSelection::eventLoop()
     histf()->cd("CRSelection");
     AnaUtil::fillHist1D("nGoodmuon", looseMuPhotonPairVec.size(), puevWt_);
     AnaUtil::fillHist1D("nGoodelectron", looseElePhotonPairVec.size(), puevWt_);
+
     if ((looseElePhotonPairVec.size() + looseMuPhotonPairVec.size()) < 4) continue;
     AnaUtil::fillHist1D("evtCutFlow", 3, puevWt_);
     
@@ -251,8 +258,8 @@ void CRSelection::eventLoop()
     // At least one Z candidate found, now find the SS/OS lepton pair
     if (ZCandList_.size() > 0) {
       if (0) {
-	showEventNumber();
-	dumpEvent();
+	for (auto& v: ZCandList_)
+	  HZZ4lUtil::printZCandidate(v, " >> Potential Z Candidate");
       }
       AnaUtil::fillHist1D("evtCutFlow", 5, puevWt_);
       
@@ -420,7 +427,7 @@ void CRSelection::finalZllSelector(std::vector<std::pair<ZCandidate, ZCandidate>
     cout << "---- New Event" << endl;
     showEventNumber(false);
     cout << " --- #Z Candidates: " << ZCandList_.size() 
-	 << ", #Zll Candidates): " << objPairList.size() 
+	 << ", #Zll Candidates: " << objPairList.size() 
 	 << ", #Zll Candidates(final): " << evtHasCR 
 	 << ", flavour: "  << (HZZ4lUtil::sameFlavourZPair(evZ, evll) ? "same" : "different") 
 	 << endl;
@@ -904,6 +911,8 @@ bool CRSelection::readJob(const string& jobFile, int& nFiles)
       useEventList_ = (stoi(value.c_str()) > 0) ? true : false;
     else if (key == "dumpGenInfo")
       dumpGenInfo_ = (stoi(value.c_str()) > 0) ? true : false;
+    else if (key == "syncDumpFile")
+      syncDumpFile_ = value;
 
     tokens.clear();
   }

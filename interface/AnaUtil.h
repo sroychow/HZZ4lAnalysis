@@ -28,6 +28,7 @@ namespace AnaUtil {
   double deltaPhi(const TLorentzVector& a, const TLorentzVector& b);
   double deltaR(const TLorentzVector& a, const TLorentzVector& b);
   double cutValue(const std::map<std::string, double>& m, std::string cname);
+  void buildList(const std::string& filename, std::vector<std::string>& list);
   void buildList(const std::vector<std::string>& tokens, std::vector<std::string>& list);
   void buildMap(const std::vector<std::string>& tokens, std::map<std::string, int>& hmap);
   void storeCuts(const std::vector<std::string>& tokens, std::map<std::string, std::map<std::string, double>* >& hmap);

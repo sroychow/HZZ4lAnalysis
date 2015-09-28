@@ -550,7 +550,7 @@ void PhysicsObjSelector::dumpEvent(bool dumpGen, bool showEvent, ostream& os) co
   // Jets
   if (jetColl()->size()) {
     os << " -- # Jets: " << jetColl()->size() << endl;
-    os << "  indx       pT      eta      phi NumConst   CHM      CHF     CEMF      NHF     NEMF      MUF     puId bDiscrim lepCleaned  looseId  tightId"
+    os << "  indx       pT      eta      phi NumConst   CHM      CHF     CEMF      NHF     NEMF      MUF     puId   bDiscrim lepCleaned  looseId  tightId"
        << endl;
     int indx = 0;
     for (auto const& jet: *jetColl()) {
@@ -566,7 +566,7 @@ void PhysicsObjSelector::dumpEvent(bool dumpGen, bool showEvent, ostream& os) co
          << setw(9) << jet.neutralEmEnergyFraction
          << setw(9) << jet.muonEnergyFraction
 	 << setw(9) << HZZ4lUtil::jetpuMVAid(jet)
-	 << setw(9) << jet.combinedInclusiveSecondaryVertexV2BJetTags
+	 << setw(11) << jet.combinedInclusiveSecondaryVertexV2BJetTags
 	 << setw(11) << (jetLeptonCleaning(jet, AnaUtil::cutValue(jetCutMap(), "dRlep")) ? "yes" : "no")
          << setw(9) << HZZ4lUtil::isLooseJet(jet)
          << setw(9) << HZZ4lUtil::isTightJet(jet)
