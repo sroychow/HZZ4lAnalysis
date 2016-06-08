@@ -105,7 +105,8 @@ void CRSelection::bookHistograms()
   new TH1F("mass4l", "4lepton mass", 200, 0., 200.);
   
   new TH1D("evtCutFlow", "Event CutFlow", 8, -0.5, 7.5);
-  new TH1D("crSelCutFlow", "CR Selection CutFlow", 10, -0.5, 9.5);
+  new TH1D("crSelCutFlowSS", "CR Selection CutFlow (SS)", 9, -0.5, 8.5);
+  new TH1D("crSelCutFlowOS", "CR Selection CutFlow (OS)", 10, -0.5, 9.5);
   
   new TH1D("dRlepZal1Zal2", "dRlepZal1Zal2", 100, 0, 5);
   new TH1D("dRlepZbl1Zbl2", "dRlepZbl1Zbl2", 100, 0, 5);
@@ -233,8 +234,8 @@ void CRSelection::eventLoop()
     }
     
     // access selected objects 
-    const auto& tightElePhotonPairVec = getTightElePhotonPairList();
-    const auto& tightMuPhotonPairVec  = getTightMuPhotonPairList();
+    const auto& tightElePhotonPairVec = getTightIsoElePhotonPairList();
+    const auto& tightMuPhotonPairVec  = getTightIsoMuPhotonPairList();
     
     const auto& looseElePhotonPairVec = getLooseElePhotonPairList();
     const auto& looseMuPhotonPairVec  = getLooseMuPhotonPairList();
@@ -244,18 +245,23 @@ void CRSelection::eventLoop()
     AnaUtil::fillHist1D("nGoodmuon", looseMuPhotonPairVec.size(), puevWt_);
     AnaUtil::fillHist1D("nGoodelectron", looseElePhotonPairVec.size(), puevWt_);
 
+    // We need at least 4 loose leptons
     if ((looseElePhotonPairVec.size() + looseMuPhotonPairVec.size()) < 4) continue;
     AnaUtil::fillHist1D("evtCutFlow", 3, puevWt_);
     
-    // Find the real Z candidate(s)
+    // Must have at least 2 OSSF leptons
     if (tightElePhotonPairVec.size() < 2 && tightMuPhotonPairVec.size() < 2) continue;
     AnaUtil::fillHist1D("evtCutFlow", 4, puevWt_);
-
-    if (tightElePhotonPairVec.size() >= 2) ZSelector<vhtm::Electron>(tightElePhotonPairVec);
-    if (tightMuPhotonPairVec.size() >= 2)  ZSelector<vhtm::Muon>(tightMuPhotonPairVec);
+    
+    // Find the real Z candidate(s)
+    if (tightElePhotonPairVec.size() >= 2) ZSelector<vhtm::Electron>(tightElePhotonPairVec, ZCandList_);
+    if (tightMuPhotonPairVec.size() >= 2)  ZSelector<vhtm::Muon>(tightMuPhotonPairVec, ZCandList_);
     AnaUtil::fillHist1D("nZcand", ZCandList_.size(), puevWt_);
+
+    // add lepton isolation to the Z candidates found above
+    addLeptonIsolation(ZCandList_, tightElePhotonPairVec, tightMuPhotonPairVec);
       
-    // At least one Z candidate found, now find the SS/OS lepton pair
+    // At least one real Z candidate found, now find the other SS/OS lepton pair
     if (ZCandList_.size() > 0) {
       if (0) {
 	for (auto& v: ZCandList_)
@@ -271,6 +277,9 @@ void CRSelection::eventLoop()
 	  if (looseElePhotonPairVec.size() >= 2)
 	    leptonPairSelector<vhtm::Electron>(looseElePhotonPairVec, v, false, SSllpairCandList_, ZssllPairVec_);
 	}
+	// add lepton isolation to the ll candidates found above
+	addLeptonIsolation(SSllpairCandList_, looseElePhotonPairVec, looseMuPhotonPairVec);
+
 	if (ZssllPairVec_.size() > 0) {
 	  AnaUtil::fillHist1D("nSSllcand", ZssllPairVec_.size(), puevWt_);
 	  finalZllSelector(ZssllPairVec_, false, run, lumis, event);
@@ -283,6 +292,9 @@ void CRSelection::eventLoop()
 	  if (looseElePhotonPairVec.size() >= 2)
 	    leptonPairSelector<vhtm::Electron>(looseElePhotonPairVec, v, true, OSllpairCandList_, ZosllPairVec_);
 	}
+	// add lepton isolation to the ll candidates found above
+	addLeptonIsolation(OSllpairCandList_, looseElePhotonPairVec, looseMuPhotonPairVec);
+
 	if (ZosllPairVec_.size() > 0) {
 	  AnaUtil::fillHist1D("nOSllcand", ZosllPairVec_.size(), puevWt_);
 	  finalZllSelector(ZosllPairVec_, true, run, lumis, event);
@@ -294,110 +306,6 @@ void CRSelection::eventLoop()
   }
   // Analysis is over
   endJob();
-}
-// Z+ll (SS) CR, (method AA), made by relaxing selection requirement on the two additional leptons; 
-// they are required to be same-sign but to pass only loose ID (see above) and SIP
-// (i.e. no cut on iso, no tight muon/tight electron requirements) 
-template <class T> 
-void CRSelection::leptonPairSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec,
-				     ZCandidate& Z, bool studyOSPair, std::vector<ZCandidate>& candList, 
-				     std::vector<std::pair<ZCandidate, ZCandidate> >& objPairList) {
-  for (unsigned int i = 0; i < lepPhotonPairVec.size(); ++i) {
-    const auto& ip = lepPhotonPairVec[i];
-    const TLorentzVector& lep1P4 = HZZ4lUtil::getP4(ip.first);
-    if (lep1P4 == Z.l1P4 || lep1P4 == Z.l2P4) continue;  // Keep aside the lepton that forms the real Z
-
-    for (unsigned int j = i+1; j < lepPhotonPairVec.size(); ++j) {
-      const auto& jp = lepPhotonPairVec[j];
-      
-      if (studyOSPair) {
-	if (ip.first.charge + jp.first.charge != 0) continue; // opposite charge
-      }
-      else {
-	if (ip.first.charge != jp.first.charge) continue;     // same charge
-      }
-      const TLorentzVector& lep2P4 = HZZ4lUtil::getP4(jp.first);
-      if (lep2P4 == Z.l1P4 || lep2P4 == Z.l2P4) continue;     // Keep aside the lepton that forms the real Z
-
-      // Select FSR photon(s) for lepton[i]
-      // both the leptons are needed to form Z mass
-      vector<vhtm::PackedPFCandidate> lep1PhoList;
-      if (!ip.second.empty()) HZZ4lUtil::selectFSRPhoforLepton(lep1P4, lep2P4, ip.second, lep1PhoList);
-      
-      // Select FSR photon(s) for lepton[j]
-      vector<vhtm::PackedPFCandidate> lep2PhoList;
-      if (!jp.second.empty()) HZZ4lUtil::selectFSRPhoforLepton(lep2P4, lep1P4, jp.second, lep2PhoList);
-      
-      int l1phoidx = (!lep1PhoList.empty()) ? HZZ4lUtil::selectBestFSRforLepton(lep1P4, lep1PhoList) : -1;
-      int l2phoidx = (!lep2PhoList.empty()) ? HZZ4lUtil::selectBestFSRforLepton(lep2P4, lep2PhoList) : -1;
-
-      // Now choose the correct FSR Photon for this ll pair
-      TLorentzVector phoP4;    // LorentzVector of the finally selected FSR
-      int withLep = -1;
-      if (l1phoidx == -1 && l2phoidx == -1) {
-        phoP4.SetPtEtaPhiE(0., 0., 0., 0);  
-      }
-      else if (l1phoidx > -1 && l2phoidx == -1) {
-	phoP4 = HZZ4lUtil::getP4(lep1PhoList[l1phoidx]);
-        withLep = 1;
-      }
-      else if (l1phoidx == -1 && l2phoidx > -1) {
-	phoP4 = HZZ4lUtil::getP4(lep2PhoList[l2phoidx]);
-        withLep = 2;
-      }
-      else {
-        const vhtm::PackedPFCandidate& lep1Photon = lep1PhoList[l1phoidx];
-	const vhtm::PackedPFCandidate& lep2Photon = lep2PhoList[l2phoidx];
-        if (lep1Photon.pt > 4. || lep2Photon.pt > 4.) {
-          if (lep1Photon.pt > lep2Photon.pt) {
-            phoP4 = HZZ4lUtil::getP4(lep1Photon);
-            withLep = 1;
-          }
-          else {
-            phoP4 = HZZ4lUtil::getP4(lep2Photon);
-            withLep = 2;
-          }
-	}
-	else {
-	  const TLorentzVector& l1PhoP4 = HZZ4lUtil::getP4(lep1Photon);
-	  const TLorentzVector& l2PhoP4 = HZZ4lUtil::getP4(lep2Photon);
-	  bool dRcond = l1PhoP4.DeltaR(lep1P4) < l2PhoP4.DeltaR(lep2P4);
-          if (dRcond) {
-            phoP4 = l1PhoP4;
-            withLep = 1;
-          }
-          else {
-            phoP4 = l2PhoP4;
-            withLep = 2;
-          }
-	}
-      }
-      ZCandidate ztmp;
-      if (typeid(jp.first) == typeid(vhtm::Muon))
-        ztmp.flavour = HZZ4lUtil::ZType::mumu;
-      else if (typeid(jp.first) == typeid(vhtm::Electron))
-        ztmp.flavour = HZZ4lUtil::ZType::ee;
-      else 
-	ztmp.flavour = -1;
-      
-      ztmp.l1Index = i;
-      ztmp.l1P4 = lep1P4;
-      ztmp.l1Charge = ip.first.charge;
-      
-      ztmp.l2Index = j;
-      ztmp.l2P4 = lep2P4;
-      ztmp.l2Charge = jp.first.charge;
-      
-      ztmp.fsrWithLep = withLep; 
-      ztmp.fsrPhoP4 = phoP4;
-      double Zmass = (lep1P4 + lep2P4 + phoP4).M();
-      ztmp.mass = Zmass;
-      ztmp.massDiff = std::fabs(Zmass - HZZ4lUtil::MZnominal);
-      
-      candList.push_back(ztmp);
-      objPairList.push_back({Z, ztmp});
-    }
-  }
 }
 void CRSelection::finalZllSelector(std::vector<std::pair<ZCandidate, ZCandidate> >& objPairList, bool studyOSPair, int run, int lumi, int event) {
   AnaUtil::fillHist1D("evtCutFlow", 6, puevWt_);
@@ -448,24 +356,11 @@ void CRSelection::finalZllSelector(std::vector<std::pair<ZCandidate, ZCandidate>
 bool CRSelection::CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose) {
   histf()->cd();
   histf()->cd("CRSelection");
-  AnaUtil::fillHist1D("crSelCutFlow", 0, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 0, puevWt_);
 
-  std::vector<TLorentzVector> fsrVec;
-  fsrVec.push_back(Z.fsrPhoP4);
-  fsrVec.push_back(ssll.fsrPhoP4);
-  
-  // First Z Candidate
-  bool ZlepIso = false; 
-  if (Z.flavour == HZZ4lUtil::ZType::mumu)
-    ZlepIso = ZmumuIso(Z, fsrVec);
-  else if (Z.flavour == HZZ4lUtil::ZType::ee)
-    ZlepIso = ZeeIso(Z, fsrVec);
-  
-  if (!ZlepIso) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 1, puevWt_);
-  
   // -- from twiki --
   // dR(eta,phi)>0.02 between each of the four leptons (to remove ghosts)
+  // and candidates where the sam eleptons contribute more than once 
   double dra1a2 = Z.l1P4.DeltaR(Z.l2P4);
   double drb1b2 = ssll.l1P4.DeltaR(ssll.l2P4);
   double dra1b1 = Z.l1P4.DeltaR(ssll.l1P4);
@@ -485,8 +380,9 @@ bool CRSelection::CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose)
     dra2b1 > 0.02 &&
     dra2b2 > 0.02;
   if (!dRlep) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 2, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 1, puevWt_);
 
+  // Lepton pT
   vector<TLorentzVector> lepP4List;
   lepP4List.push_back(Z.l1P4);
   lepP4List.push_back(Z.l2P4);
@@ -496,17 +392,19 @@ bool CRSelection::CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose)
   
   // -- from twiki --
   // any two leptons of the four have pt > 20/10
-  if (lepP4List[0].Pt() <= 20 || lepP4List[1].Pt() <= 10) return false;;
-  AnaUtil::fillHist1D("crSelCutFlow", 3, puevWt_);
+  if (lepP4List[0].Pt() <= 20) return false;;
+  AnaUtil::fillHist1D("crSelCutFlowSS", 2, puevWt_);
+  
+  if (lepP4List[1].Pt() <= 10) return false;;
+  AnaUtil::fillHist1D("crSelCutFlowSS", 3, puevWt_);
 
   if (Z.mass <= 40. || Z.mass >= 120.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 4, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 4, puevWt_);
   
   if (ssll.mass <= 12. || ssll.mass >= 120.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 5, puevWt_);
-  AnaUtil::fillHist1D("crSelCutFlow", 6, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 5, puevWt_);
 
-  // QCD suppression: m(ll)>4 GeV on all OS lepton pairs (only three in this case given that the Z2 is SS)
+  // QCD suppression: m(ll) > 4 GeV on all OS lepton pairs (only three in this case given that the Z2 is SS)
   TLorentzVector ZaP4, ZbP4;
   if (Z.l1Charge + ssll.l1Charge == 0) {
     ZaP4 = Z.l1P4 + ssll.l1P4;
@@ -517,32 +415,33 @@ bool CRSelection::CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose)
     ZbP4 = Z.l2P4 + ssll.l1P4;
   }
   if (ZaP4.M() <= 4. || ZbP4.M() <= 4.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 7, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 6, puevWt_);
   
   // Smart Cut
   bool smartcutFlag = false;
   if (HZZ4lUtil::sameFlavourZPair(Z, ssll)) {
     TLorentzVector ZSSlepP4, ZOSlepP4;
+    TLorentzVector ZSSlepFsrP4, ZOSlepFsrP4;
     if (Z.l1Charge == ssll.l1Charge) {
       ZSSlepP4 = Z.l1P4;
+      ZSSlepFsrP4 = Z.l1FsrP4;
+
       ZOSlepP4 = Z.l2P4;
+      ZOSlepFsrP4 = Z.l2FsrP4;
     } 
     else {
       ZSSlepP4 = Z.l2P4;
+      ZSSlepFsrP4 = Z.l2FsrP4;
+
       ZOSlepP4 = Z.l1P4;
+      ZOSlepFsrP4 = Z.l1FsrP4;
     }
     
-    TLorentzVector alt1Z1P4 = ZOSlepP4 + ssll.l1P4;
-    HZZ4lUtil::addFSRtoAltZ(Z, ssll, 1, 1, alt1Z1P4, "(lep1,lep1)");
+    TLorentzVector alt1Z1P4 = ZOSlepP4 + ssll.l1P4 + ZOSlepFsrP4 + ssll.l1FsrP4;
+    TLorentzVector alt1Z2P4 = ZSSlepP4 + ssll.l2P4 + ZSSlepFsrP4 + ssll.l2FsrP4;
     
-    TLorentzVector alt1Z2P4 = ZSSlepP4 + ssll.l2P4;
-    HZZ4lUtil::addFSRtoAltZ(Z, ssll, 2, 2, alt1Z2P4, "(lep2,lep2)");
-    
-    TLorentzVector alt2Z1P4 = ZOSlepP4 + ssll.l2P4;
-    HZZ4lUtil::addFSRtoAltZ(Z, ssll, 1, 2, alt2Z1P4, "(lep1,lep2)");
-    
-    TLorentzVector alt2Z2P4 = ZSSlepP4 + ssll.l1P4;
-    HZZ4lUtil::addFSRtoAltZ(Z, ssll, 2, 1, alt2Z2P4, "(lep2,lep2)");
+    TLorentzVector alt2Z1P4 = ZOSlepP4 + ssll.l2P4 + ZOSlepFsrP4 + ssll.l2FsrP4;
+    TLorentzVector alt2Z2P4 = ZSSlepP4 + ssll.l1P4 + ZSSlepFsrP4 + ssll.l1FsrP4;
     
     if (0)
       cout << "Smart Cut combination 1" << endl
@@ -565,33 +464,20 @@ bool CRSelection::CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose)
     }
   }
   if (smartcutFlag) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 8, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 7, puevWt_);
   
   double mass4l = (Z.l1P4 + Z.l2P4 + Z.fsrPhoP4 + ssll.l1P4 + ssll.l2P4 + ssll.fsrPhoP4).M();
   if (mass4l <= 70.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 9, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowSS", 8, puevWt_);
 
   return true;
 }
 bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose) {
-  AnaUtil::fillHist1D("crSelCutFlow", 0, puevWt_);
-
-  // find lepton isolation for the Z Candidate
-  std::vector<TLorentzVector> fsrVec;
-  fsrVec.push_back(Z.fsrPhoP4);
-  fsrVec.push_back(osll.fsrPhoP4);
-
-  bool ZlepIso = false;
-  if (Z.flavour == HZZ4lUtil::ZType::mumu)
-    ZlepIso = ZmumuIso(Z, fsrVec);
-  else if (Z.flavour == HZZ4lUtil::ZType::ee)
-    ZlepIso = ZeeIso(Z, fsrVec);
-  
-  if (!ZlepIso) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 1, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 0, puevWt_);
   
   // -- from twiki --
   // dR(eta,phi)>0.02 between each of the four leptons (to remove ghosts)
+  // and candidates where the sam eleptons contribute more than once 
   double dra1a2 = Z.l1P4.DeltaR(Z.l2P4);
   double drb1b2 = osll.l1P4.DeltaR(osll.l2P4);
   double dra1b1 = Z.l1P4.DeltaR(osll.l1P4);
@@ -611,8 +497,9 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
     dra2b1 > 0.02 &&
     dra2b2 > 0.02;
   if (!dRlep) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 2, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 1, puevWt_);
 
+  // Lepton pT
   vector<TLorentzVector> lepP4List;
   lepP4List.push_back(Z.l1P4);
   lepP4List.push_back(Z.l2P4);
@@ -622,28 +509,25 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
   
   // -- from twiki --
   // any two leptons of the four have pt > 20/10
-  if (lepP4List[0].Pt() <= 20 || lepP4List[1].Pt() <= 10) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 3, puevWt_);
+  if (lepP4List[0].Pt() <= 20) return false;
+  AnaUtil::fillHist1D("crSelCutFlowOS", 2, puevWt_);
+
+  if (lepP4List[1].Pt() <= 10) return false;
+  AnaUtil::fillHist1D("crSelCutFlowOS", 3, puevWt_);
 
   if (Z.mass <= 40. || Z.mass >= 120.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 4, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 4, puevWt_);
   
   if (osll.mass <= 12. || osll.mass >= 120.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 5, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 5, puevWt_);
 
   // Tight + isolation veto
-  bool oslepIdIso1 = false;
-  bool oslepIdIso2 = false;
+  bool oslepIdIso1 = false,
+    oslepIdIso2 = false;
   if (osll.flavour == HZZ4lUtil::ZType::mumu) {
     const auto& muPhotonPairVec = getLooseMuPhotonPairList();
-
     const vhtm::Muon& mu1 = muPhotonPairVec.at(osll.l1Index).first;
-    double l1iso = HZZ4lUtil::computeMuonIso(mu1, osll, osll.l1P4, fsrVec, 0.01, 0.4, false);
-    osll.l1Isolation = l1iso;
-
     const vhtm::Muon& mu2 = muPhotonPairVec.at(osll.l2Index).first;
-    double l2iso = HZZ4lUtil::computeMuonIso(mu2, osll, osll.l2P4, fsrVec, 0.01, 0.4, false);
-    osll.l2Isolation = l2iso;
 
     // made by requiring exactly one ("3P1F") or two ("2P2F") of the additional
     // leptons to pass loose cuts (loose ID + SIP) but fail tight ID and isolation.
@@ -652,14 +536,8 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
   }
   else if (osll.flavour == HZZ4lUtil::ZType::ee) {
     const auto& elePhotonPairVec = getLooseElePhotonPairList();
-
     const vhtm::Electron& ele1 = elePhotonPairVec.at(osll.l1Index).first;
-    double l1iso = HZZ4lUtil::computeElectronIso(ele1, osll, osll.l1P4, fsrVec, 0.08, 0.4, false);
-    osll.l1Isolation = l1iso;
-
     const vhtm::Electron& ele2 = elePhotonPairVec.at(osll.l2Index).first;
-    double l2iso = HZZ4lUtil::computeElectronIso(ele2, osll, osll.l2P4, fsrVec, 0.08, 0.4, false);
-    osll.l2Isolation = l2iso;
 
     if (!HZZ4lUtil::electronBDT(ele1) || osll.l1Isolation >= 0.5) oslepIdIso1 = true;
     if (!HZZ4lUtil::electronBDT(ele2) || osll.l2Isolation >= 0.5) oslepIdIso2 = true;
@@ -678,7 +556,7 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
     cout << "Wrong parameter! osCRType: " << os_crtype << endl;
   
   if (!oslepIdIso) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 6, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 6, puevWt_);
 
   // QCD suppression: m(ll)>4 GeV on all OS lepton pairs (only three in this case given that the Z2 is SS)
   TLorentzVector ZaP4, ZbP4;
@@ -691,25 +569,19 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
     ZbP4 = Z.l2P4 + osll.l1P4;
   }
   if (Z.mass <= 4 || osll.mass <= 4 || ZaP4.M() <= 4. || ZbP4.M() <= 4.) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 7, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 7, puevWt_);
 
   // Smart Cut
   bool smartcutFlag = false;
   if (HZZ4lUtil::sameFlavourZPair(Z, osll)) {
     TLorentzVector altZ1P4, altZ2P4;
     if (Z.l1Charge + osll.l1Charge == 0) {
-      altZ1P4 = Z.l1P4 + osll.l1P4;
-      HZZ4lUtil::addFSRtoAltZ(Z, osll, 1, 1, altZ1P4, "(lep1,lep1)"); 
-      
-      altZ2P4 = Z.l2P4 + osll.l2P4;
-      HZZ4lUtil::addFSRtoAltZ(Z, osll, 2, 2, altZ2P4, "(lep2,lep2)"); 
+      altZ1P4 = Z.l1P4 + osll.l1P4 + Z.l1FsrP4 + osll.l1FsrP4;
+      altZ2P4 = Z.l2P4 + osll.l2P4 + Z.l2FsrP4 + osll.l2FsrP4;
     }
     else {
-      altZ1P4 = Z.l1P4 + osll.l2P4;
-      HZZ4lUtil::addFSRtoAltZ(Z, osll, 1, 2, altZ1P4, "(lep1,lep2)"); 
-      
-      altZ2P4 = Z.l2P4 + osll.l1P4;
-      HZZ4lUtil::addFSRtoAltZ(Z, osll, 2, 1, altZ2P4, "(lep2,lep1)"); 
+      altZ1P4 = Z.l1P4 + osll.l2P4 + Z.l1FsrP4 + osll.l2FsrP4;
+      altZ2P4 = Z.l2P4 + osll.l1P4 + Z.l2FsrP4 + osll.l1FsrP4;
     }
     if (std::fabs(altZ2P4.M() - HZZ4lUtil::MZnominal) < std::fabs(altZ1P4.M() - HZZ4lUtil::MZnominal)) {
       TLorentzVector lv = altZ1P4;
@@ -723,115 +595,20 @@ bool CRSelection::CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose)
 	   << ", " << Z.mass << ", " << altZ1P4.M() 
 	   << ", " << osll.mass << ", " << altZ2P4.M() << ")"
 	   << endl;
+    // Finally apply the Smart cut
     if (std::fabs(altZ1P4.M() - HZZ4lUtil::MZnominal) < Z.massDiff && altZ2P4.M() < 12) {
       if (0) cout << " -- SmartCut: skip Z+ll Candidate" << endl;
       smartcutFlag = true;
     }
   }
   if (smartcutFlag) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 8, puevWt_);  
+  AnaUtil::fillHist1D("crSelCutFlowOS", 8, puevWt_);  
     
   double mass4l = (Z.l1P4 + Z.l2P4 + Z.fsrPhoP4 + osll.l1P4 + osll.l2P4 + osll.fsrPhoP4).M();
   if (mass4l <= 70) return false;
-  AnaUtil::fillHist1D("crSelCutFlow", 9, puevWt_);
+  AnaUtil::fillHist1D("crSelCutFlowOS", 9, puevWt_);
   
   return true;
-}
-
-// create unique lepton pair combination giving a Z statisfying Z2 mass cuts
-// and push them into a vector
-template <typename T>
-void CRSelection::ZSelector(const vector<pair<T, vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec) {
-  for (unsigned int i = 0; i < lepPhotonPairVec.size(); ++i) {
-    const auto& ip = lepPhotonPairVec[i];
-    const TLorentzVector& lep1P4 = HZZ4lUtil::getP4(ip.first);
-    for (unsigned int j = i+1; j < lepPhotonPairVec.size(); ++j) {
-      const auto& jp = lepPhotonPairVec[j];
-      
-      // opposite charge
-      if (ip.first.charge + jp.first.charge != 0) continue; 
-      const TLorentzVector& lep2P4 = HZZ4lUtil::getP4(jp.first);
-      
-      // Select FSR photon(s) for lepton[i]
-      // both the leptons are needed to form Z mass
-      vector<vhtm::PackedPFCandidate> lep1PhoList;
-      if (!ip.second.empty())
-	HZZ4lUtil::selectFSRPhoforLepton(lep1P4, lep2P4, ip.second, lep1PhoList);
-      
-      // Select FSR photon(s) for lepton[j]
-      vector<vhtm::PackedPFCandidate> lep2PhoList;
-      if (!jp.second.empty())
-	HZZ4lUtil::selectFSRPhoforLepton(lep2P4, lep1P4, jp.second, lep2PhoList);
-      
-      int l1phoidx = (!lep1PhoList.empty()) ? HZZ4lUtil::selectBestFSRforLepton(lep1P4, lep1PhoList) : -1;
-      int l2phoidx = (!lep2PhoList.empty()) ? HZZ4lUtil::selectBestFSRforLepton(lep2P4, lep2PhoList) : -1;
-      
-      // Now choose the correct FSR Photon for this ll pair
-      TLorentzVector phoP4;    // LorentzVector of the finally selected FSR
-      int withLep = -1;
-      if (l1phoidx == -1 && l2phoidx == -1) {
-        phoP4.SetPtEtaPhiE(0., 0., 0., 0);  
-      }
-      else if (l1phoidx > -1 && l2phoidx == -1) {
-	phoP4 = HZZ4lUtil::getP4(lep1PhoList[l1phoidx]);
-        withLep = 1;
-      }
-      else if (l1phoidx == -1 && l2phoidx > -1) {
-	phoP4 = HZZ4lUtil::getP4(lep2PhoList[l2phoidx]);
-        withLep = 2;
-      }
-      else {
-        const vhtm::PackedPFCandidate& lep1Photon = lep1PhoList[l1phoidx];
-	const vhtm::PackedPFCandidate& lep2Photon = lep2PhoList[l2phoidx];
-        if (lep1Photon.pt > 4. || lep2Photon.pt > 4.) {
-          if (lep1Photon.pt > lep2Photon.pt) {
-            phoP4 = HZZ4lUtil::getP4(lep1Photon);
-            withLep = 1;
-          }
-          else {
-            phoP4 = HZZ4lUtil::getP4(lep2Photon);
-            withLep = 2;
-          }
-	}
-	else {
-	  const TLorentzVector& l1PhoP4 = HZZ4lUtil::getP4(lep1Photon);
-	  const TLorentzVector& l2PhoP4 = HZZ4lUtil::getP4(lep2Photon);
-	  bool dRcond = l1PhoP4.DeltaR(lep1P4) < l2PhoP4.DeltaR(lep2P4);
-          if (dRcond) {
-            phoP4 = l1PhoP4;
-            withLep = 1;
-          }
-          else {
-            phoP4 = l2PhoP4;
-            withLep = 2;
-          }
-	}
-      }
-      ZCandidate ztmp;
-      if (typeid(jp.first) == typeid(vhtm::Muon))
-        ztmp.flavour = HZZ4lUtil::ZType::mumu;
-      else if (typeid(jp.first) == typeid(vhtm::Electron))
-        ztmp.flavour = HZZ4lUtil::ZType::ee;
-      else 
-	ztmp.flavour = -1;
-      
-      ztmp.l1Index = i;
-      ztmp.l1P4 = lep1P4;
-      ztmp.l1Charge = ip.first.charge;
-      
-      ztmp.l2Index = j;
-      ztmp.l2P4 = lep2P4;
-      ztmp.l2Charge = jp.first.charge;
-      
-      ztmp.fsrWithLep = withLep; 
-      ztmp.fsrPhoP4 = phoP4;
-      double Zmass = (lep1P4 + lep2P4 + phoP4).M();
-      ztmp.mass = Zmass;
-      ztmp.massDiff = std::fabs(Zmass - HZZ4lUtil::MZnominal);
-      
-      ZCandList_.push_back(ztmp);
-    }
-  }
 }
 void CRSelection::endJob() {
   syncDumpf_.close();
@@ -853,9 +630,9 @@ void CRSelection::endJob() {
 
   string crlabels [] = {
     "All",
-    "ZlepIso",
     "dRlep",
-    "lepptcut",
+    "lep pT > 20 GeV",
+    "lep pT > 10 GeV",
     "Zmasscut",
     "llmasscut",
     "tight+iso",

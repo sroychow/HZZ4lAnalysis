@@ -40,19 +40,18 @@ public:
   void selectEvent() {};
   virtual void bookHistograms();
   
-  template <class T>
-    void ZSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec);
-  
-  template <class T> 
-    void leptonPairSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >&, ZCandidate& Z, 
-			    bool studyOSPair, std::vector<ZCandidate>& candList, std::vector<std::pair<ZCandidate, ZCandidate> >& objPairList);
- 
-  void ZZselector();
   void finalZllSelector(std::vector<std::pair<ZCandidate, ZCandidate> >& objPairList, bool studyOSPair, int run, int lumi, int event);
 
   bool CRSelectorZSSll(ZCandidate& Z, ZCandidate& ssll, bool verbose=false);
   bool CRSelectorZOSll(ZCandidate& Z, ZCandidate& osll, bool verbose=false);
 
+#if 0
+  template <class T>
+    void ZSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec, std::vector<ZCandidate>& candList);
+  template <class T> 
+    void leptonPairSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec, ZCandidate& Z, 
+			    bool studyOSPair, std::vector<ZCandidate>& candList, std::vector<std::pair<ZCandidate, ZCandidate> >& objPairList);
+#endif
 public:
   std::vector<vhtm::Vertex> vtxList_;
   std::vector<std::pair<ZCandidate, ZCandidate> > ZZPairVec_;

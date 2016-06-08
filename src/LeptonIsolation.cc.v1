@@ -1,0 +1,836 @@
+#include "configana.h"
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <iterator>
+#include <functional>
+#include <numeric>
+#include <string>
+#include <climits>
+#include <cassert>
+#include <cstdlib>
+#include <sstream>
+
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TChain.h"
+#include "TClonesArray.h"
+#include "TFrame.h"
+#include "TRandom.h"
+#include "TStopwatch.h"
+#include "TFile.h"
+#include "TH1K.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TProfile.h"
+
+#include "HZZ4lUtil.h"
+#include "AnaUtil.h"
+#include "LeptonIsolation.h"
+
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+using std::ifstream;
+using std::ostringstream;
+using std::vector;
+using std::map;
+using std::pair;
+using std::abs;
+using std::max;
+using std::sqrt;
+using std::sort;
+using std::setprecision;
+using std::setw;
+using std::setw;
+using std::setiosflags;
+using std::resetiosflags;
+using std::ios;
+using std::stoi;
+using namespace vhtm;
+// -----------
+// Constructor
+// -----------
+LeptonIsolation::LeptonIsolation()
+  : PhysicsObjSelector(),
+    _dumpEvent(false), 
+    dogenZmatching_(false)
+{
+ cone_["c15"]="015";
+ cone_["c20"]="020";
+ cone_["c25"]="025";
+ cone_["c30"]="030";
+ cone_["c35"]="035";
+ cone_["c40"]="040";
+ cone_["c45"]="045";
+}
+// ----------
+// Destructor
+// ----------
+LeptonIsolation::~LeptonIsolation() 
+{}
+// -------------------------------------------------------
+// Prepare for the run, do necessary initialisation etc.
+// -------------------------------------------------------
+bool LeptonIsolation::beginJob() 
+{ 
+  PhysicsObjSelector::beginJob();
+
+  // Open the output ROOT file
+  histf()->cd();
+  PhysicsObjSelector::bookHistograms();
+  bookHistograms();
+  return true;
+}
+// ---------------
+// Book Common histograms
+// ---------------
+void LeptonIsolation::bookHistograms() 
+{
+ histf()->cd();
+ histf()->mkdir("Event");
+ histf()->cd("Event");
+ new TH1D("nGoodvtx","Number of Vertices",50,0,50);
+//Rho Values
+ new TH1F("fGridRhoAll","Grid Rho for event",100,0.,100.);
+ new TH1F("fGridRhoFastjetAll","Grid Rho for event",100,0.,100.);
+ new TH1F("fGridRhoFastjetAllCalo","Grid Rho for event",100,0.,100.);
+ new TH1F("fGridRhoFastjetCentralCalo","Grid Rho for event",100,0.,100.);
+ new TH1F("fGridRhoFastjetCentralChargedPileUp","Grid Rho for event",100,0.,100.);
+ new TH1F("fGridRhoFastjetCentralNeutral","Grid Rho for event",100,0.,100.);
+ bookDefaultIsoHistograms("SignalLepton");
+ bookDefaultIsoHistograms("BkgLepton");
+ bookHistograms("electron");
+ bookHistograms("muon");
+}
+//------------------------------------
+//book histograms for efficinecy study from default isolations
+//------------------------------------
+void LeptonIsolation::bookDefaultIsoHistograms(TString dir) 
+{
+ histf()->cd();
+ histf()->mkdir(dir);
+ histf()->cd(dir);
+ new TH1F("nMu","number of Muons",20,-0.5,19.5);
+ new TH1F("nEle","number of Electrons",20,-0.5,19.5);
+ //default isolation from miniAOD
+ new TProfile("IsoRelMuonOvsnVtx", "Delta-beta Corrected Relative Isolation Default vs nVertex", 80, 0, 80, 0.,1.);
+ new TProfile("IsoRelElectronOvsnVtx", "Rho Corrected Relative Isolation Default vs nVertex", 80, 0, 80, 0.,1.);
+ new TH1F("mupfrelIso_015","Muon rel Isolation for cone size 0.15",100,0.,1.);
+ new TH1F("mupfrelIso_020","Muon rel Isolation for cone size 0.20",100,0.,1.);
+ new TH1F("mupfrelIso_025","Muon rel Isolation for cone size 0.25",100,0.,1.);
+ new TH1F("mupfrelIso_030","Muon rel Isolation for cone size 0.30",100,0.,1.);
+ new TH1F("mupfrelIso_035","Muon rel Isolation for cone size 0.35",100,0.,1.);
+ new TH1F("mupfrelIso_040","Muon rel Isolation for cone size 0.40",100,0.,1.);
+ new TH1F("mupfrelIso_045","Muon rel Isolation for cone size 0.45",100,0.,1.);
+
+ new TH1F("elepfrelIso_015","Electron rel Isolation for cone size 0.15",100,0.,1.);
+ new TH1F("elepfrelIso_020","Electron rel Isolation for cone size 0.20",100,0.,1.);
+ new TH1F("elepfrelIso_025","Electron rel Isolation for cone size 0.25",100,0.,1.);
+ new TH1F("elepfrelIso_030","Electron rel Isolation for cone size 0.30",100,0.,1.);
+ new TH1F("elepfrelIso_035","Electron rel Isolation for cone size 0.35",100,0.,1.);
+ new TH1F("elepfrelIso_040","Electron rel Isolation for cone size 0.40",100,0.,1.);
+ new TH1F("elepfrelIso_045","Electron rel Isolation for cone size 0.45",100,0.,1.);
+ //just for comparison
+ new TProfile("IsoRelMuonOvsnVtx_pf", "Delta-beta Corrected Relative Isolation PF vs nVertex", 80, 0, 80, 0.,1.);
+ new TProfile("IsoRelElectronOvsnVtx_pf", "Rho Corrected Relative Isolation PF vs nVertex", 80, 0, 80, 0.,1.);
+ //Delta-beta counter for muons
+ new TH1F("mu_db_015", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_020", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_025", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_030", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_035", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_040", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("mu_db_045", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ //rho counter for electrons
+ new TH1F("ele_rho_015", "no of leptons passing rho cut for cone size 0.15", 7, -0.5, 6.5);
+ new TH1F("ele_rho_020", "no of leptons passing rho cut for cone size 0.20", 7, -0.5, 6.5);
+ new TH1F("ele_rho_025", "no of leptons passing rho cut for cone size 0.25", 7, -0.5, 6.5);
+ new TH1F("ele_rho_030", "no of leptons passing rho cut for cone size 0.30", 7, -0.5, 6.5);
+ new TH1F("ele_rho_035", "no of leptons passing rho cut for cone size 0.35", 7, -0.5, 6.5);
+ new TH1F("ele_rho_040", "no of leptons passing rho cut for cone size 0.40", 7, -0.5, 6.5);
+ new TH1F("ele_rho_045", "no of leptons passing rho cut for cone size 0.45", 7, -0.5, 6.5);
+ if( dir == "SignalLepton" ) {
+   //Generator Level 
+   new TH1F("genZMass","gen Z mass",200,0.,200.);
+   new TH1F("genZl1Pt","leading lepton Pt from Z at gen ",200,0.,200.);
+   new TH1F("genZl2Pt","leading lepton Pt from Z at gen ",200,0.,200.);
+   //Reco Level
+   new TH1F("recoZMass","reco Z mass",200,0.,200.);
+   new TH1F("recoZl1Pt","leading lepton Pt from Z at reco ",200,0.,200.);
+   new TH1F("recoZl2Pt","leading lepton Pt from Z at reco ",200,0.,200.);
+ }
+}
+//-------------------------------------
+//Book isolation used for optimization histograms for leptons
+//-------------------------------------
+void LeptonIsolation::bookHistograms(TString folder) 
+{
+ histf()->cd();
+ histf()->mkdir(folder);
+ histf()->cd(folder);
+//Kinematic info
+ new TH1F("pt", "Lepton Pt", 150, 0., 150.);
+ new TProfile("ptvsnVtx", "Lepton Pt vs nVertex", 80, 0, 80, 0.,150.);
+ new TH1F("eta", "Lepton Eta", 30, -3., 3.);
+//Charged Isolation
+ new TH1F("ChIso_015","Charged Isolation for cone size 0.15",100,0.,10.);
+ new TH1F("ChIso_020","Charged Isolation for cone size 0.20",100,0.,10.);
+ new TH1F("ChIso_025","Charged Isolation for cone size 0.25",100,0.,10.);
+ new TH1F("ChIso_030","Charged Isolation for cone size 0.30",100,0.,10.);
+ new TH1F("ChIso_035","Charged Isolation for cone size 0.35",100,0.,10.);
+ new TH1F("ChIso_040","Charged Isolation for cone size 0.40",100,0.,10.);
+ new TH1F("ChIso_045","Charged Isolation for cone size 0.45",100,0.,10.);
+//Neutral Isolation
+ new TH1F("NIso_015","Neutral Isolation for cone size 0.15",100,0.,10.);
+ new TH1F("NIso_020","Neutral Isolation for cone size 0.20",100,0.,10.);
+ new TH1F("NIso_025","Neutral Isolation for cone size 0.25",100,0.,10.);
+ new TH1F("NIso_030","Neutral Isolation for cone size 0.30",100,0.,10.);
+ new TH1F("NIso_035","Neutral Isolation for cone size 0.35",100,0.,10.);
+ new TH1F("NIso_040","Neutral Isolation for cone size 0.40",100,0.,10.);
+ new TH1F("NIso_045","Neutral Isolation for cone size 0.45",100,0.,10.);
+//Pileup 
+ new TH1F("PuIso_015","Isolation from Pileup for cone size 0.15",100,0.,10.);
+ new TH1F("PuIso_020","Isolation from Pileup for cone size 0.20",100,0.,10.);
+ new TH1F("PuIso_025","Isolation from Pileup for cone size 0.25",100,0.,10.);
+ new TH1F("PuIso_030","Isolation from Pileup for cone size 0.30",100,0.,10.);
+ new TH1F("PuIso_035","Isolation from Pileup for cone size 0.35",100,0.,10.);
+ new TH1F("PuIso_040","Isolation from Pileup for cone size 0.40",100,0.,10.);
+ new TH1F("PuIso_045","Isolation from Pileup for cone size 0.45",100,0.,10.);
+//Charged Isolation vs Rho
+ new TProfile("chIso015vsrho", "Charged Isolation 015 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso020vsrho", "Charged Isolation 020 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso025vsrho", "Charged Isolation 025 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso030vsrho", "Charged Isolation 030 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso035vsrho", "Charged Isolation 035 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso040vsrho", "Charged Isolation 040 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("chIso045vsrho", "Charged Isolation 045 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+//Isolation from PU vs Rho
+ new TProfile("puIso015vsrho", "Pileup Isolation 015 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("puIso020vsrho", "Pileup Isolation 020 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("puIso025vsrho", "Pileup Isolation 025 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("puIso030vsrho", "Pileup Isolation 030 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("puIso035vsrho", "Pileup Isolation 035 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("puIso040vsrho", "Pileup Isolation 040 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.); 
+ new TProfile("puIso045vsrho", "Pileup Isolation 045 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+//Neutral Isolation vs Rho
+ new TProfile("NIso015vsrho", "Neutral Isolation 015 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso020vsrho", "Neutral Isolation 020 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso025vsrho", "Neutral Isolation 025 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso030vsrho", "Neutral Isolation 030 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso035vsrho", "Neutral Isolation 035 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso040vsrho", "Neutral Isolation 040 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+ new TProfile("NIso045vsrho", "Neutral Isolation 045 vs fixedGridRhoFastjetAll", 100, 0., 100., 0.,10.);
+/////////////////////////////////////////////////Isolation vs NVertex//////////////////////////////////////
+//Charged Isolation vs NVertex
+ new TProfile("chIso015vsnVtx", "Charged Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso020vsnVtx", "Charged Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso025vsnVtx", "Charged Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso030vsnVtx", "Charged Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso035vsnVtx", "Charged Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso040vsnVtx", "Charged Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("chIso045vsnVtx", "Charged Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+//Isolation from PU vs NVertex
+ new TProfile("puIso015vsnVtx", "Pileup Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso020vsnVtx", "Pileup Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso025vsnVtx", "Pileup Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso030vsnVtx", "Pileup Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso035vsnVtx", "Pileup Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso040vsnVtx", "Pileup Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("puIso045vsnVtx", "Pileup Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+//Neutral Isolation vs NVertex
+ new TProfile("NIso015vsnVtx", "Neutral Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso020vsnVtx", "Neutral Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso025vsnVtx", "Neutral Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso030vsnVtx", "Neutral Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso035vsnVtx", "Neutral Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso040vsnVtx", "Neutral Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("NIso045vsnVtx", "Neutral Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+//Rho Corrected Raw Isolation vs NVertex
+ new TProfile("rhIsoRaw015vsnVtx", "Rho Corrected Raw Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw020vsnVtx", "Rho Corrected Raw Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw025vsnVtx", "Rho Corrected Raw Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw030vsnVtx", "Rho Corrected Raw Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw035vsnVtx", "Rho Corrected Raw Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw040vsnVtx", "Rho Corrected Raw Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRaw045vsnVtx", "Rho Corrected Raw Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+
+//Rho Corrected Relative Isolation vs NVertex
+ new TProfile("rhIsoRel015vsnVtx", "Rho Corrected Relative Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel020vsnVtx", "Rho Corrected Relative Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel025vsnVtx", "Rho Corrected Relative Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel030vsnVtx", "Rho Corrected Relative Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel035vsnVtx", "Rho Corrected Relative Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel040vsnVtx", "Rho Corrected Relative Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("rhIsoRel045vsnVtx", "Rho Corrected Relative Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+
+//Raw Delta Beta Corrected Isolation vs NVertex
+ new TProfile("dbIsoRaw015vsnVtx", "Delta-beta Corrected Raw Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw020vsnVtx", "Delta-beta Corrected Raw Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw025vsnVtx", "Delta-beta Corrected Raw Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw030vsnVtx", "Delta-beta Corrected Raw Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw035vsnVtx", "Delta-beta Corrected Raw Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw040vsnVtx", "Delta-beta Corrected Raw Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRaw045vsnVtx", "Delta-beta Corrected Raw Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+
+//Delta Beta Rel Corrected Isolation vs NVertex
+ new TProfile("dbIsoRel015vsnVtx", "Delta-beta Corrected Relative Isolation 015 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel020vsnVtx", "Delta-beta Corrected Relative Isolation 020 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel025vsnVtx", "Delta-beta Corrected Relative Isolation 025 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel030vsnVtx", "Delta-beta Corrected Relative Isolation 030 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel035vsnVtx", "Delta-beta Corrected Relative Isolation 035 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel040vsnVtx", "Delta-beta Corrected Relative Isolation 040 vs nVertex", 80, 0, 80, 0.,5.);
+ new TProfile("dbIsoRel045vsnVtx", "Delta-beta Corrected Relative Isolation 045 vs nVertex", 80, 0, 80, 0.,5.);
+
+ //rho counter
+ new TH1F("lep_rho_015", "no of leptons passing rho cut for cone size 0.15", 7, -0.5, 6.5);
+ new TH1F("lep_rho_020", "no of leptons passing rho cut for cone size 0.20", 7, -0.5, 6.5);
+ new TH1F("lep_rho_025", "no of leptons passing rho cut for cone size 0.25", 7, -0.5, 6.5);
+ new TH1F("lep_rho_030", "no of leptons passing rho cut for cone size 0.30", 7, -0.5, 6.5);
+ new TH1F("lep_rho_035", "no of leptons passing rho cut for cone size 0.35", 7, -0.5, 6.5);
+ new TH1F("lep_rho_040", "no of leptons passing rho cut for cone size 0.40", 7, -0.5, 6.5);
+ new TH1F("lep_rho_045", "no of leptons passing rho cut for cone size 0.45", 7, -0.5, 6.5);
+ //Delta-beta counter
+ new TH1F("lep_db_015", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_020", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_025", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_030", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_035", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_040", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+ new TH1F("lep_db_045", "no of leptons passing db cut for cone size 0.15",7,-0.5,6.5);
+}
+//---------------------------------
+// Read Slope from NIso vs Rho fits
+//---------------------------------
+void LeptonIsolation::readRhofitSlope() {
+}
+//----------------------------------------------
+//Fill Histo for a cone
+//----------------------------------------------
+void LeptonIsolation::fillHistoforCone(std::string c,double mupt,double ch_had,double ch_lep,double nu_had,double nu_photon,
+                                       double pu,int ngoodVtx,double fGridRhoFastjetAll, 
+                                       const std::map<std::string, double>& lepCutMap,TString& leptype) {
+ histf()->cd();
+ histf()->cd(leptype);
+ if(cone_.find(c)!=cone_.end()) {
+   AnaUtil::fillHist1D("ChIso_"+cone_[c],ch_had,1);
+   AnaUtil::fillHist1D("NIso_"+cone_[c],nu_had+nu_photon,1);
+   AnaUtil::fillHist1D("PuIso_"+cone_[c],pu,1);
+
+   // do deltaBeta
+   double dbiso = ch_had + std::max(0.0, nu_had + nu_photon - 
+                                    AnaUtil::cutValue(lepCutMap, "db"+cone_[c])*pu);
+
+   double rhoSlope = AnaUtil::cutValue(lepCutMap,"brho" + cone_[c]); 
+
+   double rhoIso = ch_had + std::max(0.0, nu_had + nu_photon - rhoSlope*fGridRhoFastjetAll);
+
+   //isolation vs rho
+   AnaUtil::fillProfile("chIso" + cone_[c] + "vsrho",fGridRhoFastjetAll,ch_had);
+   AnaUtil::fillProfile("NIso" + cone_[c] + "vsrho",fGridRhoFastjetAll,nu_had + nu_photon);
+   AnaUtil::fillProfile("puIso" + cone_[c] + "vsrho",fGridRhoFastjetAll,pu);
+
+   //Vs NVertex
+   AnaUtil::fillProfile("chIso"+cone_[c] + "vsnVtx",ngoodVtx,ch_had);
+   AnaUtil::fillProfile("NIso"+cone_[c] + "vsnVtx",ngoodVtx,nu_had + nu_photon);
+   AnaUtil::fillProfile("puIso"+cone_[c] +"vsnVtx",ngoodVtx,pu);    
+   AnaUtil::fillProfile("rhIsoRaw"+cone_[c] + "vsnVtx",ngoodVtx,rhoIso);
+   AnaUtil::fillProfile("rhIsoRel"+cone_[c] + "vsnVtx",ngoodVtx,rhoIso/mupt);
+   AnaUtil::fillProfile("dbIsoRaw"+cone_[c] + "vsnVtx",ngoodVtx,dbiso); 
+   AnaUtil::fillProfile("dbIsoRel"+cone_[c]+"vsnVtx",ngoodVtx,dbiso/mupt); 
+
+   AnaUtil::fillHist1D("lep_rho_" + cone_[c],0);
+   ///Added parts for iso efficiency
+   if( rhoIso/mupt < 0.5 ) {
+     AnaUtil::fillHist1D("lep_rho_" + cone_[c],1);
+     if( rhoIso/mupt < 0.45 ){
+       AnaUtil::fillHist1D("lep_rho_" + cone_[c],2);
+       if( rhoIso/mupt < 0.4 ){
+         AnaUtil::fillHist1D("lep_rho_" + cone_[c],3);
+         if( rhoIso/mupt < 0.35 ){
+           AnaUtil::fillHist1D("lep_rho_" + cone_[c],4);
+           if( rhoIso/mupt < 0.3 ){
+             AnaUtil::fillHist1D("lep_rho_" + cone_[c],5);
+             if( rhoIso/mupt < 0.25 ){ 
+               AnaUtil::fillHist1D("lep_rho_" + cone_[c],6);
+             }
+           }  
+         }
+       }
+     }
+   }
+   AnaUtil::fillHist1D("lep_db_" + cone_[c],0);
+   if( dbiso/mupt < 0.5 ){
+     AnaUtil::fillHist1D("lep_db_" + cone_[c],1);
+     if( dbiso/mupt < 0.45 ){
+       AnaUtil::fillHist1D("lep_db_" + cone_[c],2);
+       if( dbiso/mupt < 0.4 ){
+         AnaUtil::fillHist1D("lep_db_" + cone_[c],3);
+         if( dbiso/mupt < 0.35 ){
+           AnaUtil::fillHist1D("lep_db_" + cone_[c],4);
+           if( dbiso/mupt < 0.3 ){
+             AnaUtil::fillHist1D("lep_db_" + cone_[c],5);
+             if( dbiso/mupt < 0.25 ){ 
+               AnaUtil::fillHist1D("lep_db_" + cone_[c],6);
+             }
+           }  
+         }
+       }
+     }
+   }
+ }
+ else
+  std::cout<<"Wrong cone value"<<std::endl;
+}
+//--------------------
+double LeptonIsolation::pfisoEle( const vhtm::Electron& ele, double eventRho, 
+                               double fsrPhotonEtSum, const string& cone) {
+//reference 
+//ele.chargedHadronIso + std::max(0., ele.neutralHadronIso + ele.photonIso  - fsrPhotonEtSum
+//                                    - getEleRhoEffectiveArea(std::fabs(ele.eta)) * eventRho))
+
+  if( ele.isolationMap.find(cone) != ele.isolationMap.end() ) 
+    return ( ele.isolationMap.at(cone).at(0) + std::max(0., ele.isolationMap.at(cone).at(2) + 
+             ele.isolationMap.at(cone).at(2) - fsrPhotonEtSum
+             - HZZ4lUtil::getEleRhoEffectiveArea(std::fabs(ele.eta)) * eventRho));
+  return -1.;
+}
+double LeptonIsolation::pfisoMu(const vhtm::Muon& mu, double fsrPhotonEtSum, const string& cone) {
+//reference 
+//mu.sumChargedHadronPt + std::max(0., mu.sumNeutralHadronEt + mu.sumPhotonEt 
+//- fsrPhotonEtSum - 0.5 * mu.sumPUPt));
+  if( mu.isolationMap.find(cone) != mu.isolationMap.end() ) 
+    return (mu.isolationMap.at(cone).at(0) + std::max(0., mu.isolationMap.at(cone).at(2) + 
+           mu.isolationMap.at(cone).at(3) - fsrPhotonEtSum - 0.5 * mu.isolationMap.at(cone).at(4)));
+  return -1;
+}
+//-----------------------------------------------------------------------------------
+//Fill muon default isolation histograms
+void LeptonIsolation::getMuonDefaultIso(std::vector<vhtm::Muon> muvec, int ngoodVtx, 
+                                        TString type) {
+  histf()->cd();
+  histf()->cd(type);
+  AnaUtil::fillHist1D("nMu", muvec.size());
+  for (const auto& mu : muvec ) {
+    AnaUtil::fillProfile("IsoRelMuonOvsnVtx",ngoodVtx,
+                          HZZ4lUtil::pfiso(mu,0.)/mu.pt);
+    for( auto& c : cone_ ) {
+      double riso = pfisoMu(mu, 0., c.first)/mu.pt;
+      AnaUtil::fillHist1D("mupfrelIso_" + c.second,riso);
+      if( c.first == "c40") 
+        AnaUtil::fillProfile("IsoRelMuonOvsnVtx_pf",ngoodVtx,riso);
+      AnaUtil::fillHist1D("mu_db_" + c.second,0);
+      ///Added parts for iso efficiency
+      if( riso < 0.5 ) {
+        AnaUtil::fillHist1D("mu_db_" + c.second,1);
+        if( riso < 0.45 ){
+          AnaUtil::fillHist1D("mu_db_" + c.second,2);
+          if( riso < 0.4 ){
+            AnaUtil::fillHist1D("mu_db_" + c.second,3);
+            if( riso < 0.35 ){
+              AnaUtil::fillHist1D("mu_db_" + c.second,4);
+              if( riso < 0.3 ){
+                AnaUtil::fillHist1D("mu_db_" + c.second,5);
+                if( riso < 0.25 ){ 
+                  AnaUtil::fillHist1D("mu_db_" + c.second,6);
+                }
+              }  
+            }
+          }
+        }
+      }
+    }
+  }
+} 
+//------------------------------------------------------------------------------------
+//Fill electron default isolation histograms
+void LeptonIsolation::getElectronDefaultIso(std::vector<vhtm::Electron> elevec, 
+                                            int ngoodVtx,TString type) {
+  histf()->cd();
+  histf()->cd(type);
+  AnaUtil::fillHist1D("nEle", elevec.size());
+  for (const auto& ele : elevec ) {
+    AnaUtil::fillProfile("IsoRelElectronOvsnVtx",ngoodVtx,
+                          HZZ4lUtil::pfiso(ele,getEventGridRho(),0.)/ele.pt);
+    for( auto& c : cone_ ) {
+      double riso = pfisoEle(ele, getEventGridRho(), 0., c.first)/ele.pt;
+      AnaUtil::fillHist1D("elepfrelIso_" + c.second,riso);
+      if( c.first == "c40") 
+        AnaUtil::fillProfile("IsoRelElectronOvsnVtx_pf",ngoodVtx,riso);
+      AnaUtil::fillHist1D("ele_rho_" + c.second,0);
+      ///Added parts for iso efficiency
+      if( riso < 0.5 ) {
+        AnaUtil::fillHist1D("ele_rho_" + c.second,1);
+        if( riso < 0.45 ){
+          AnaUtil::fillHist1D("ele_rho_" + c.second,2);
+          if( riso < 0.4 ){
+            AnaUtil::fillHist1D("ele_rho_" + c.second,3);
+            if( riso < 0.35 ){
+              AnaUtil::fillHist1D("ele_rho_" + c.second,4);
+              if( riso < 0.3 ){
+                AnaUtil::fillHist1D("ele_rho_" + c.second,5);
+                if( riso < 0.25 ){ 
+                  AnaUtil::fillHist1D("ele_rho_" + c.second,6);
+                }
+              }  
+            }
+          }
+        }
+      }
+    }  
+  }
+} 
+
+//--------------------
+template <typename T>
+void LeptonIsolation::getLeptonIsolationInfo( std::vector<T> lepvec, double rho, int ngoodVtx, 
+                                             const std::map<std::string, double>& lepCutMap, TString leptype ) {
+  histf()->cd();
+  histf()->cd(leptype);
+
+  for (const auto& l : lepvec ) {
+        double lpt = l.pt;
+        AnaUtil::fillHist1D("pt",lpt,1);
+        AnaUtil::fillHist1D("eta",l.eta,1);
+        AnaUtil::fillProfile("ptvsnVtx",ngoodVtx,l.pt);
+    
+        if(l.isolationMap.find("c15") != l.isolationMap.end() ) {
+            fillHistoforCone("c15",lpt,l.isolationMap.at("c15").at(0),
+                             l.isolationMap.at("c15").at(1),
+                             l.isolationMap.at("c15").at(2),
+                             l.isolationMap.at("c15").at(3),
+                             l.isolationMap.at("c15").at(4),
+                             ngoodVtx,
+                             rho,
+                             lepCutMap,
+                             leptype);
+        }
+        if(l.isolationMap.find("c20") != l.isolationMap.end() ) {
+            fillHistoforCone("c20",lpt,l.isolationMap.at("c20").at(0),
+                             l.isolationMap.at("c20").at(1),
+                             l.isolationMap.at("c20").at(2),
+                             l.isolationMap.at("c20").at(3),
+                             l.isolationMap.at("c20").at(4),
+                             ngoodVtx,
+                             rho, 
+                             lepCutMap,
+                             leptype);
+        }
+        if(l.isolationMap.find("c25") != l.isolationMap.end() ) {
+            fillHistoforCone("c25",lpt,l.isolationMap.at("c25").at(0),
+                             l.isolationMap.at("c25").at(1),
+                             l.isolationMap.at("c25").at(2),
+                             l.isolationMap.at("c25").at(3),
+                             l.isolationMap.at("c25").at(4),
+                             ngoodVtx,
+                             rho,
+			     lepCutMap,
+                             leptype);
+            
+        }
+        if(l.isolationMap.find("c30") != l.isolationMap.end() ) {
+            fillHistoforCone("c30",lpt,l.isolationMap.at("c30").at(0),
+                             l.isolationMap.at("c30").at(1),
+                             l.isolationMap.at("c30").at(2),
+                             l.isolationMap.at("c30").at(3),
+                             l.isolationMap.at("c30").at(4),
+                             ngoodVtx,
+                             rho,
+                             lepCutMap,
+                             leptype);
+
+        }
+        if(l.isolationMap.find("c35") != l.isolationMap.end() ) {
+            fillHistoforCone("c35",lpt,l.isolationMap.at("c35").at(0),
+                             l.isolationMap.at("c35").at(1),
+                             l.isolationMap.at("c35").at(2),
+                             l.isolationMap.at("c35").at(3),
+                             l.isolationMap.at("c35").at(4),
+                             ngoodVtx,
+                             rho,
+                             lepCutMap,
+                             leptype);
+
+        }
+        if(l.isolationMap.find("c40") != l.isolationMap.end() ) {
+            fillHistoforCone("c40",lpt,l.isolationMap.at("c40").at(0),
+                             l.isolationMap.at("c40").at(1),
+                             l.isolationMap.at("c40").at(2),
+                             l.isolationMap.at("c40").at(3),
+                             l.isolationMap.at("c40").at(4),
+                             ngoodVtx,
+                             rho,
+                             lepCutMap,
+                             leptype);
+
+        }
+        if(l.isolationMap.find("c45") != l.isolationMap.end() ) {
+            fillHistoforCone("c45",lpt,l.isolationMap.at("c45").at(0),
+                             l.isolationMap.at("c45").at(1),
+                             l.isolationMap.at("c45").at(2),
+                             l.isolationMap.at("c45").at(3),
+                             l.isolationMap.at("c45").at(4),
+                             ngoodVtx,
+                             rho,
+                             lepCutMap,
+                             leptype);
+
+        }
+    }
+}
+
+
+
+// -------------------
+// The main event loop
+// -------------------
+void LeptonIsolation::clearLists() {
+ PhysicsObjSelector::clear();
+ Zllp4vec_.clear();
+ extraMuvec_.clear();
+ signalMuvec_.clear();
+ extraElevec_.clear();
+ signalElevec_.clear();
+ vtxList.clear();
+}
+void LeptonIsolation::eventLoop() 
+{
+  // Initialize analysis
+  if (!beginJob()) return;
+  int nPrint = max(10000, nEvents()/1000);
+
+  Options op;
+  op.verbose = false;
+  op.usesbit = true;  // Crucial
+  op.printselected = false;
+  
+  
+  // --------------------
+  // Start the event loop
+  // --------------------
+  string lastFile;
+  //long int nRecoMuons=0,nGoodRecoMuons=0;
+  std::cout<<"Bunch Crossing>>>>"<<bunchCrossing()<<std::endl;
+  for (int ev = 0; ev < nEvents(); ++ev) {
+
+    clearEvent();
+    clearLists();
+    int lflag = chain()->LoadTree(ev); 
+    int nbytes = getEntry(lflag);    // returns total bytes read
+
+    string currentFile(gSystem->BaseName(chain()->GetCurrentFile()->GetName())); 
+
+    const Event& evt = eventColl()->at(0);
+
+    histf()->cd();
+
+    //For data or for MC without pileup
+    puevWt_ = 1;
+    /*
+    if (isMC()) {
+      int npu = 0;
+      puevWt_ = wtPileUp(npu);
+    }
+    */
+    // Show status of the run
+    int run   = evt.run;
+    int event = evt.event;
+    int lumis = evt.lumis;
+
+    // Show status of the run
+    if (currentFile != lastFile) 
+    cout << "Tree# " << setw(4) << chain()->GetTreeNumber()  
+         << " ==> " << currentFile 
+         << " <<< Run# " << run
+         << " Lumis# " << lumis
+         << " Event# " << setw(8) << event << " >>> " 
+         << " Events proc. " << setw(8) << ev 
+         << endl;
+    lastFile = currentFile;
+
+    // Show the status 
+    if (ev%nPrint == 0) 
+    cout << "Tree# " << setw(4) << chain()->GetTreeNumber()  
+         << " ==> " << chain()->GetCurrentFile()->GetName() 
+         << " <<< Run# " << run 
+         << " Lumis# " << lumis
+         << " Event# " << setw(8) << event << " >>> " 
+         << " Events proc. " << setw(8) << ev 
+         << endl;
+
+   op.verbose = (logOption() >> 1 & 0x1); 
+   findVtxInfo(vtxList, op, fLog());
+   
+   if( vtxList.empty() )             continue;
+  
+   int ngoodVtx=vtxList.size();
+   //dumpEvent();   
+   if(dogenZmatching_)       getZllP4fromGen();
+   //no Z found at gen level
+   if( dogenZmatching_ && Zllp4vec_.empty() )           continue;
+   histf()->cd();
+   histf()->cd("Event"); 
+   AnaUtil::fillHist1D("nGoodvtx",ngoodVtx,1);
+   AnaUtil::fillHist1D("fGridRhoAll",evt.fGridRhoAll,1);
+   AnaUtil::fillHist1D("fGridRhoFastjetAll",evt.fGridRhoFastjetAll,1);
+   AnaUtil::fillHist1D("fGridRhoFastjetAllCalo",evt.fGridRhoFastjetAllCalo,1);
+   AnaUtil::fillHist1D("fGridRhoFastjetCentralCalo",evt.fGridRhoFastjetCentralCalo,1);
+   AnaUtil::fillHist1D("fGridRhoFastjetCentralChargedPileUp",evt.fGridRhoFastjetCentralChargedPileUp,1);
+   AnaUtil::fillHist1D("fGridRhoFastjetCentralNeutral",evt.fGridRhoFastjetCentralNeutral,1);
+
+   // main analysis object selection without iso
+   findObjects(puevWt_);
+   //!!!!!!!!!!!!!!Be very Careful!!!!!!!!!!!!!!!!!
+   //when using loose leptons
+   //const auto& loosemuVec_ = getLooseMuList();
+   //when using tight leptons
+   const auto& loosemuVec_ = getTightMuList();
+
+   //when using loose leptons
+   //const auto& looseeleVec_ = getLooseEleList();
+   //when using tight leptons
+   const auto& looseeleVec_ = getTightEleList();
+   
+   if( !loosemuVec_.empty() ) {
+      if(dogenZmatching_) {
+        dogenMatching<vhtm::Muon>(loosemuVec_,signalMuvec_,extraMuvec_);
+        getMuonDefaultIso(signalMuvec_,ngoodVtx,"SignalLepton");
+        getMuonDefaultIso(extraMuvec_,ngoodVtx,"BkgLepton");
+       } else {
+         if (AnaUtil::cutValue(evselCutMap(), "Isbkg"))
+          getMuonDefaultIso(loosemuVec_,ngoodVtx,"BkgLepton");
+         else
+          getMuonDefaultIso(loosemuVec_,ngoodVtx,"SignalLepton");
+       }
+      //getLeptonIsolationInfo<vhtm::Muon>( loosemuVec_, evt.fGridRhoFastjetAll,
+      //                                    ngoodVtx,muonCutMap(),"muon" );
+      
+   }
+   if( !looseeleVec_.empty() ) { 
+     if(dogenZmatching_) {
+       dogenMatching<vhtm::Electron>(looseeleVec_,signalElevec_,extraElevec_);
+       getElectronDefaultIso(signalElevec_,ngoodVtx,"SignalLepton");
+       getElectronDefaultIso(extraElevec_,ngoodVtx,"BkgLepton");
+     } else {
+       if (AnaUtil::cutValue(evselCutMap(), "Isbkg")) 
+         getElectronDefaultIso(looseeleVec_,ngoodVtx,"BkgLepton");
+       else
+         getElectronDefaultIso(looseeleVec_,ngoodVtx,"SignalLepton");
+     }
+     //getLeptonIsolationInfo<vhtm::Electron>( looseeleVec_, evt.fGridRhoFastjetAll,ngoodVtx,
+     //                                         electronCutMap(),"electron" );
+   }
+  }
+  // Analysis is over
+  endJob();
+}
+
+void LeptonIsolation::getZllP4fromGen() {
+  histf()->cd();
+  histf()->cd("SignalLepton");
+  for (const auto& gp: *genParticleColl()) {
+    int pdgid = std::abs(gp.pdgId);
+    //int status = gp.status;
+    if( std::abs(pdgid) != 23 )   continue;
+    //std::cout << "Zfound at gen" << std::endl;
+    TLorentzVector ZP4 = HZZ4lUtil::getP4(gp);
+    ZCandidate ztemp; 
+    ztemp.mass = ZP4.M();
+    AnaUtil::fillHist1D("genZMass", ztemp.mass);
+    int nZl = 0;
+    for (auto di: gp.daughtIndices ) {
+      if (di >= ngenparticle()) continue;
+      const GenParticle& dgp = genParticleColl()->at(di);
+      int pid = std::abs(dgp.pdgId);
+      if( pid == 23)      continue;
+      if ( pid == 11)  ztemp.flavour = HZZ4lUtil::ZType::ee;
+      else if ( pid == 13)  ztemp.flavour = HZZ4lUtil::ZType::mumu;
+      else  ztemp.flavour = HZZ4lUtil::ZType::wrong;
+      if( nZl == 0 ) {
+        ztemp.l1P4 = HZZ4lUtil::getP4(dgp);
+        ztemp.l1Charge = dgp.charge;
+        nZl++;
+      }
+      else {
+        ztemp.l2P4 = HZZ4lUtil::getP4(dgp);
+        ztemp.l2Charge = dgp.charge;
+      }
+    }
+   if( ztemp.l1P4.Pt() > ztemp.l2P4.Pt() ) {
+     AnaUtil::fillHist1D("genZl1Pt", ztemp.l1P4.Pt());
+     AnaUtil::fillHist1D("genZl2Pt", ztemp.l2P4.Pt());
+   }
+   else {
+     AnaUtil::fillHist1D("genZl1Pt", ztemp.l1P4.Pt());
+     AnaUtil::fillHist1D("genZl2Pt", ztemp.l2P4.Pt());
+   }
+   Zllp4vec_.push_back(ztemp);
+  }
+}
+//do gen matching of the leptons from Z
+template <typename T>
+void LeptonIsolation::dogenMatching(std::vector<T> lepvec, std::vector<T>& sigvec, 
+                                    std::vector<T>& bkgvec) {
+  for(auto& lep : lepvec) {
+    TLorentzVector lepP4 = HZZ4lUtil::getP4(lep);
+    bool ismatched = false;
+    for( auto& genZ: Zllp4vec_) {
+      bool m1 = lepP4.DeltaR(genZ.l1P4) < 0.3 && std::fabs(genZ.l1P4.Pt() - lepP4.Pt()) < 25.;
+      bool m2 = lepP4.DeltaR(genZ.l2P4) < 0.3 && std::fabs(genZ.l2P4.Pt() - lepP4.Pt()) < 25.;
+      if( m1 || m2 ) {
+        ismatched = true;
+        break;
+      }
+    }//genz loop
+    if(ismatched)  sigvec.push_back(lep);
+    else  bkgvec.push_back(lep);
+  }//lep loop
+}
+
+bool LeptonIsolation::readJob(const string& jobFile, int& nFiles)
+{
+  if (!AnaBase::readJob(jobFile, nFiles)) return false;
+
+  static const int BUF_SIZE = 256;
+
+  // Open the file containing the datacards
+  ifstream fin(jobFile.c_str(), ios::in);    
+  if (!fin) {
+    cerr << "Input File: " << jobFile << " could not be opened!" << endl;
+    return false;
+  }
+
+  char buf[BUF_SIZE];
+  vector<string> tokens;
+  while (fin.getline(buf, BUF_SIZE, '\n')) {  // Pops off the newline character
+    string line(buf);
+    if (line.empty() || line == "START") continue;   
+
+    // enable '#' and '//' style comments
+    if (line.substr(0,1) == "#" || line.substr(0,2) == "//") continue;
+    if (line == "END") break;
+
+    // Split the line into words
+    AnaUtil::tokenize(line, tokens);
+    assert(tokens.size() > 1);
+    string key = tokens[0];
+    string value = tokens[1];
+    if (key == "dogenZmatching")
+      dogenZmatching_ = (stoi(value.c_str()) > 0) ? true : false;
+    tokens.clear();
+  }
+  // Close the file
+  fin.close();
+  printJob();
+  return true;
+}
+void LeptonIsolation::endJob() {
+
+  closeFiles();
+
+  histf()->cd();
+  histf()->Write();
+  histf()->Close();
+  delete histf();
+}

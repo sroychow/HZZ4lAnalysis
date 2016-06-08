@@ -17,11 +17,15 @@
 #include "PhysicsObjSelector.h"
 #include "ZCandidate.h"
 
+using std::ofstream;
 class EventSelection: public PhysicsObjSelector {
     
 public:
   enum EventType {
     mmmm = 0, eeee, eemm
+  };
+  enum MassRange {
+    low = 0, high, fullblind, unblind 
   };
   EventSelection();
   virtual ~EventSelection();
@@ -37,9 +41,6 @@ public:
   void selectEvent() {};
   virtual void bookHistograms();
     
-  template <typename T>
-    void ZSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec, std::vector<ZCandidate>& candList);
-
   void ZZselector();
   void finalZZSelector(int run, int lumi, int event);
   int findExtraLeptons(const ZCandidate& Z1, const ZCandidate& Z2);
@@ -49,6 +50,10 @@ public:
   int getGenDauPgd(const vhtm::GenParticle& gp);
   double getHmassfromZdau(const vhtm::GenParticle& Z1, const vhtm::GenParticle& Z2);
   bool genOk();
+#if 0
+  template <typename T>
+    void ZSelector(const std::vector<std::pair<T, std::vector<vhtm::PackedPFCandidate> > >& lepPhotonPairVec, std::vector<ZCandidate>& candList);
+#endif
   static bool hasJetPair(const std::vector<vhtm::Jet>& jetList);
   static void ZZkbg(const ZCandidate& Z1, const ZCandidate& Z2, const TLorentzVector& jet1P4, const TLorentzVector& jet2P4,
 		    int nJets, std::map<std::string, double>& kd);
@@ -67,5 +72,6 @@ public:
   ofstream syncDumpf_;
   bool doKDcalc_;
   std::string dumpFilename_;
+  int massRange_;
 };
 #endif

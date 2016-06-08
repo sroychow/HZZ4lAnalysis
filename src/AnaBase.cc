@@ -1,5 +1,4 @@
 #include "configana.h"
-#include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <iterator>
@@ -78,8 +77,10 @@ AnaBase::AnaBase()
     logOption_(0),
     useTrigger_(true),
     usePUWt_(false),
+    cloneEvents_(false),
     histFile_("default.root"),
     puHistFile_("./reweightFunctionFall11.root"),
+    clonedEvtFile_("clonedTree.root"),
     useTrueNInt_(true),
     logFile_("default.out"),
     evFile_("default_event.out"),
@@ -115,6 +116,8 @@ AnaBase::~AnaBase()
   delete genJetList_;
   delete genMetList_;
   delete triggerObjList_;
+
+  if (cloneEvents_) delete cloner_;
 }
 // ------------------------
 // Clear the clones arrays
@@ -153,6 +156,13 @@ bool AnaBase::beginJob()
   histf_ = TFile::Open(histFile_.c_str(), "RECREATE");
 
   setAddresses();
+  // do we want to clone events?
+  if (cloneEvents_) {
+    std::cout << "CloneFile name >>> " << clonedEvtFile_ << std::endl;
+    cloner_ = new TreeCloner(clonedEvtFile_); 
+    cloner_->cloneTree(chain_);
+  }
+
   nEvents_ = static_cast<int>(chain_->GetEntries()); 
   if (nEvents_ <= 0) {
     cerr << "******* nEvents = " << nEvents_ << ", returning!" << endl;
@@ -193,7 +203,6 @@ int AnaBase::getEntries() const
 {
   return static_cast<int>(chain_->GetEntries());
 }
-
 // ------------------------------------------------------
 // Open the output file with a global filehandle, C++ way
 // ------------------------------------------------------
@@ -234,6 +243,7 @@ void AnaBase::setAddresses()
   if (branchFound("Vertex")) chain_->SetBranchAddress("Vertex", &vertexList_);
   if (branchFound("Tau"))  chain_->SetBranchAddress("Tau", &tauList_);
   if (branchFound("Electron")) chain_->SetBranchAddress("Electron", &electronList_);
+  //if (branchFound("CalibratedElectron")) chain_->SetBranchAddress("CalibratedElectron", &electronList_);
   if (branchFound("Muon")) chain_->SetBranchAddress("Muon", &muonList_);
   if (branchFound("Photon")) chain_->SetBranchAddress("Photon", &photonList_);
   if (branchFound("PackedPFCandidate")) chain_->SetBranchAddress("PackedPFCandidate", &packedPFCandidateList_);
@@ -241,7 +251,7 @@ void AnaBase::setAddresses()
   if (branchFound("MET")) chain_->SetBranchAddress("MET", &metList_);
   if (readTrigObject_ && branchFound("TriggerObject")) 
     chain_->SetBranchAddress("TriggerObject", &triggerObjList_);
-
+  
   if (isMC_) {
     if (branchFound("GenParticle")) chain_->SetBranchAddress("GenParticle", &genParticleList_);
     if (branchFound("GenJet"))    chain_->SetBranchAddress("GenJet", &genJetList_);
@@ -288,14 +298,14 @@ void AnaBase::enableBranches()
 bool AnaBase::readJob(const string& jobFile, int& nFiles)
 {
   static const int BUF_SIZE = 256;
-
+  
   // Open the file containing the datacards
   ifstream fin(jobFile.c_str(), ios::in);    
   if (!fin) {
     cerr << "Input File: " << jobFile << " could not be opened!" << endl;
     return false;
   }
-
+  
   // note that you must use a pointer (reference!) to the cut map
   // in order to avoid scope related issues
   map<string, map<string, double>* > hmap;
@@ -314,16 +324,16 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
   while (fin.getline(buf, BUF_SIZE, '\n')) {  // Pops off the newline character
     string line(buf);
     if (line.empty() || line == "START") continue;   
-
+    
     // enable '#' and '//' style comments
     if (line.substr(0,1) == "#" || line.substr(0,2) == "//") continue;
     if (line == "END") break;
-
+    
     // Split the line into words
     AnaUtil::tokenize(line, tokens);
     int vsize = tokens.size();
     assert(vsize > 1);
-
+    
     string key   = tokens.at(0);
     string value = tokens.at(1);
     if (key == "dataType") {
@@ -348,6 +358,8 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
       logFile_ = value;
     else if (key == "eventFile")
       evFile_  = value;
+    else if (key == "cloneFile")
+      clonedEvtFile_ = value;
     else if (key == "logOption") 
       logOption_ = strtol(value.c_str(), NULL, 2);
     else if (key == "maxEvent") 
@@ -372,16 +384,18 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
       AnaUtil::buildList(tokens, fileList_);
     else if (key == "eventId" && tokens.size() == 4) 
       AnaUtil::buildMap(tokens, eventIdMap_);
+    else if (key == "cloneEvents") 
+      cloneEvents_ = (std::stoi(value.c_str()) > 0) ? true : false;
     else
       AnaUtil::storeCuts(tokens, hmap);
-
+    
     tokens.clear();
   }
   if (!isMC_) usePUWt_ = false;
-
+  
   // Close the file
   fin.close();
-
+  
   // Build the chain of root files
   for (const auto& fname: fileList_) {
     cout << ">>> INFO. Adding input file " << fname << " to TChain " << endl;
@@ -389,7 +403,7 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
     int nevt = setInputFile(fname.c_str());
     if (maxEvt_ > 0 && nevt >= maxEvt_) break;
   }
-
+  
   if (!nFiles) {
     cerr << ">>> WARN. Input Root file list is empty! exiting ..." << endl;
     return false;
@@ -408,11 +422,11 @@ void AnaBase::printJob(ostream& os) const
      << "  useTrigger = " << std::boolalpha << useTrigger_ << endl
      << "   logOption = " << logOption_ << endl
      << "    maxEvent = " << maxEvt_ << endl;
-
+  
   // Trigger Path List
   if (useTrigger_) 
     AnaUtil::showList(trigPathList_, ">>> INFO. Trigger Paths used:", os);
-
+  
   // InputFiles
   if (chain_) {
     TObjArray *fileElements = chain_->GetListOfFiles();
@@ -427,10 +441,10 @@ void AnaBase::printJob(ostream& os) const
   }
   else
     AnaUtil::showList(fileList_, ">>> INFO. inputFiles", os);
-
+  
   // EventID 
   AnaUtil::showMap<string, int>(eventIdMap_, "Event List:", os);
-
+  
   // Cuts
   map<string, map<string, double> > hmap;
   hmap.insert(pair<string, map<string, double> >("vtxCutList", vtxCutMap_));
@@ -446,7 +460,7 @@ void AnaBase::printJob(ostream& os) const
 // Let's look at the event vertex  
 void AnaBase::findVtxInfo(vector<Vertex>& list, Options& op, ostream& os) {
   if (nvertex() < 1) return;
-
+  
   if (op.verbose)
     os << "=>> Vertices: " << nvertex() << endl
        << "indx     ndf     dxy       z  chi2    sbit" 
@@ -490,7 +504,7 @@ void AnaBase::findMuonInfo(vector<Muon>& list, double vz, Options& op, ostream& 
   int indx = 0;
   for (const auto& muon: *muonList_) {
     int sbit = 0;
-    if (std::abs(muon.eta) >= AnaUtil::cutValue(muonCutMap_, "eta"))                      sbit |= (1 <<  0);
+    if (std::abs(muon.eta) >= AnaUtil::cutValue(muonCutMap_, "eta"))                 sbit |= (1 <<  0);
     if (muon.pt < AnaUtil::cutValue(muonCutMap_, "pt"))                              sbit |= (1 <<  1);
     if (!muon.isTrackerMuon)                                                         sbit |= (1 <<  2);
     if (!muon.isGlobalMuonPromptTight)                                               sbit |= (1 <<  3);
@@ -500,17 +514,17 @@ void AnaBase::findMuonInfo(vector<Muon>& list, double vz, Options& op, ostream& 
     if (muon.pixHits < AnaUtil::cutValue(muonCutMap_, "pixHits"))                    sbit |= (1 <<  7);
     if (muon.trkHits < AnaUtil::cutValue(muonCutMap_, "trkHits"))                    sbit |= (1 <<  8);
     if (muon.globalChi2 >= AnaUtil::cutValue(muonCutMap_,"globalChi2"))              sbit |= (1 <<  9);
-    if (std::abs(muon.trkD0) >= AnaUtil::cutValue(muonCutMap_,"trkD0"))                   sbit |= (1 << 10);
+    if (std::abs(muon.trkD0) >= AnaUtil::cutValue(muonCutMap_,"trkD0"))              sbit |= (1 << 10);
     bool isGoodVtx;
     TVector3 vmu = findLeptonVtx(muon.vtxIndex, isGoodVtx);
     double dz = vmu.z() - vz;
-    //if (!isGoodVtx || std::abs(dz) >= AnaUtil::cutValue(muonCutMap_, "dz"))                sbit |= (1 << 11);
-    //if (muon.relIso >= AnaUtil::cutValue(muonCutMap_, "pfRelIso"))                   sbit |= (1 << 12);
+    //if (!isGoodVtx || std::abs(dz) >= AnaUtil::cutValue(muonCutMap_, "dz"))        sbit |= (1 << 11);
+    //if (muon.relIso >= AnaUtil::cutValue(muonCutMap_, "pfRelIso"))                 sbit |= (1 << 12);
     // not in baseline selection
 #if 0
     if (!muon.isAllArbitrated)                                                       sbit |= (1 << 13);
-    if (std::abs(muon.dB) >= AnaUtil::cutValue(muonCutMap_,"dB"))                         sbit |= (1 << 14);
-    if (std::abs(muon.vtxDistZ) >= AnaUtil::cutValue(muonCutMap_, "vtxDistZ"))            sbit |= (1 << 15);
+    if (std::abs(muon.dB) >= AnaUtil::cutValue(muonCutMap_,"dB"))                    sbit |= (1 << 14);
+    if (std::abs(muon.vtxDistZ) >= AnaUtil::cutValue(muonCutMap_, "vtxDistZ"))       sbit |= (1 << 15);
 #endif
     if (op.verbose) {
       bool pp = (op.printselected && sbit) ? false : true;
@@ -554,37 +568,37 @@ void AnaBase::findElectronInfo(vector<Electron>& list, double vz, Options& op, o
        << "indx     Eta     Phi      Pt  Energy"
        << "   scEta   dB      eleId      dz     sbit" 
        << endl; 
-
+  
   int indx = 0;
   for (const auto& elec: *electronList_) {
     bool quality_EB_loose = (std::abs(elec.eta) <= 1.4442 
-                         &&  elec.sigmaEtaEta < 0.01 
-                         &&  elec.deltaEtaTrkSC < 0.007 
-                         &&  elec.deltaPhiTrkSC < 0.8
-                         &&  elec.hoe < 0.15);
+			     &&  elec.sigmaEtaEta < 0.01 
+			     &&  elec.deltaEtaTrkSC < 0.007 
+			     &&  elec.deltaPhiTrkSC < 0.8
+			     &&  elec.hoe < 0.15);
     bool quality_EE_loose = (std::abs(elec.eta) >= 1.566 
-                         &&  elec.sigmaEtaEta < 0.03
-                         &&  elec.deltaEtaTrkSC < 0.01 
-                         &&  elec.deltaPhiTrkSC < 0.7
-                         &&  elec.hoe < 0.07);
+			     &&  elec.sigmaEtaEta < 0.03
+			     &&  elec.deltaEtaTrkSC < 0.01 
+			     &&  elec.deltaPhiTrkSC < 0.7
+			     &&  elec.hoe < 0.07);
     bool quality_loose = quality_EB_loose || quality_EE_loose;  
-
+    
     int sbit = 0;
     if (elec.pt <= AnaUtil::cutValue(electronCutMap_, "pt"))                             sbit |= (1 << 0);
-    if (std::abs(elec.eta) >= AnaUtil::cutValue(electronCutMap_, "eta"))                      sbit |= (1 << 1);
-    if (!quality_loose)                                                                   sbit |= (1 << 2);
+    if (std::abs(elec.eta) >= AnaUtil::cutValue(electronCutMap_, "eta"))                 sbit |= (1 << 1);
+    if (!quality_loose)                                                                  sbit |= (1 << 2);
     if (elec.missingHits > AnaUtil::cutValue(electronCutMap_, "missingHits"))            sbit |= (1 << 3);
     //if (elec.simpleEleId95cIso <= AnaUtil::cutValue(electronCutMap_, "eleId"))         sbit |= (1 << 2);
     //if (!elec.hasGsfTrack)                                                             sbit |= (1 << 3);
-    if (std::abs(elec.dB) >= AnaUtil::cutValue(electronCutMap_, "dB"))                        sbit |= (1 << 4);
+    if (std::abs(elec.dB) >= AnaUtil::cutValue(electronCutMap_, "dB"))                   sbit |= (1 << 4);
     if ( std::abs(elec.scEta) >= AnaUtil::cutValue(electronCutMap_, "scEtaLow") 
-      && std::abs(elec.scEta) <= AnaUtil::cutValue(electronCutMap_, "scEtaUp"))               sbit |= (1 << 5);
-
+	 && std::abs(elec.scEta) <= AnaUtil::cutValue(electronCutMap_, "scEtaUp"))       sbit |= (1 << 5);
+    
     bool isGoodVtx;
     TVector3 vele = findLeptonVtx(elec.vtxIndex, isGoodVtx);
     double dz = (isGoodVtx) ? (vele.z() - vz) : 999;
-    if (std::abs(dz) >= AnaUtil::cutValue(electronCutMap_, "dz"))                              sbit |= (1 << 6);
-
+    if (std::abs(dz) >= AnaUtil::cutValue(electronCutMap_, "dz"))                        sbit |= (1 << 6);
+    
     if (op.verbose) {
       bool pp = (op.printselected && sbit) ? false : true;
       if (pp) {
@@ -627,7 +641,7 @@ void AnaBase::findTauInfo(vector<Tau>& list, double vz, Options& op, ostream& os
     if (tau.chargedIsoPtSum <= 2.0)                                           sbit |= (1 << 4); 
     if (tau.againstMuonTight <= AnaUtil::cutValue(tauCutMap_, "muVeto"))      sbit |= (1 << 5);
     if (tau.againstElectronLoose <= AnaUtil::cutValue(tauCutMap_, "eleVeto")) sbit |= (1 << 6); 
-
+    
     if (op.verbose) {
       bool pp = (op.printselected && sbit) ? false : true;
       if (pp) {
@@ -706,66 +720,65 @@ void AnaBase::dumpEvent(const char* optstr, ostream& os, bool ps) {
   // Dump original content present in the tree
   // Event
   const Event& ev = eventList_->at(0);
-
+  
   os << "Event " << ev.event 
      << " Lumis " << ev.lumis 
      << " Run " << ev.run 
      << endl;
-
+  
   int logOption = strtol(optstr, NULL, 2);
-
+  
   // Options common for all the objects
   Options options;
   options.usesbit = false;
   options.printselected = ps;
-
+  
   vector<Vertex> vList;
   options.verbose = (logOption & 0x1) ? true : false;
   findVtxInfo(vList, options, os);
   double vz = (vList.size() > 0) ? vList.at(0).z : -999;
-
+  
   vector<Tau> tList;
   options.verbose = (logOption >> 1 & 0x1) ? true : false;
   findTauInfo(tList, vz, options, os);
-
+  
   vector<Muon> mList;
   options.verbose = (logOption >> 2 & 0x1) ? true : false;
   findMuonInfo(mList, vz, options, os);
-
+  
   vector<Electron> eList;
   options.verbose = (logOption >> 3 & 0x1) ? true : false;
   findElectronInfo(eList, vz, options, os);
-
+  
   vector<Jet> bList;
   options.verbose = (logOption >> 4 & 0x1) ? true : false;
   findJetInfo(bList, options, os);
-
+  
   if (isMC_ && (logOption >> 5 & 0x1)) dumpGenInfo(os); 
 }
-
 void AnaBase::findGenInfo(int leptonId, vector<GenParticle>& genLepList, vector<GenParticle>& genTauList) {
   // Generator level information
   if (!ngenparticle()) return;
   for (auto jt = genParticleList_->begin(); jt != genParticleList_->end(); ++jt) {
     const GenParticle& gp = (*jt);
-
+    
     int pdgid = std::abs(gp.pdgId);
     if (pdgid != std::abs(leptonId) && pdgid != 15) continue;
-
+    
     int status = gp.status;
     // looking for a Hadronically decaying Tau whose mother is Higgs 
     if (pdgid == 15 && status == 2) {
       int mmid = -1;
       int index = getMotherId(gp, mmid);
       if (index < 0 || std::abs(mmid) != 25) continue; // Assert Higgs
-
+      
       vector<int> d = gp.daughtIndices;
       int ndau = 0;
       for (auto it = d.begin(); it != d.end(); ++it) {
         int di = (*it);
         if (di >= ngenparticle()) continue;
         const GenParticle& dgp = genParticleList_->at(di);
-
+	
         int pid = std::abs(dgp.pdgId);
         if (pid == 16) continue;
         //if (pid != 11 && pid != 13 && pid != 12 && pid != 14 && pid != 22) ++ndau;
@@ -790,10 +803,8 @@ void AnaBase::findGenInfo(int leptonId, vector<GenParticle>& genLepList, vector<
   if (genTauList.size() > 1)
     sort(genTauList.begin(), genTauList.end(), PtComparator<GenParticle>());
 }
-
-void AnaBase::findLLTGenInfo( vector<GenParticle>& genMuList, vector<GenParticle>& genElList,
-			      vector<GenParticle>& genTauList){
-
+void AnaBase::findLLTGenInfo(vector<GenParticle>& genMuList, vector<GenParticle>& genElList,
+			     vector<GenParticle>& genTauList) {
   emt = false;
   eet = false;
   mmt = false;
@@ -827,36 +838,35 @@ void AnaBase::findLLTGenInfo( vector<GenParticle>& genMuList, vector<GenParticle
         if (pid > 100 || pid == 24) ++ndau;
       }
       if (ndau) genTauList.push_back(gp);
-    }
+    }    
     
-    
-    //looking for lepton
+    // looking for lepton
     if ((pdgid == 11 || pdgid == 13) && status == 1) {
       int mmid = -1;
       int index = getMotherId(gp, mmid);
-      if(index < 0 || (std::abs(mmid) != 15 && std::abs(mmid) != 24)) continue;
+      if (index < 0 || (std::abs(mmid) != 15 && std::abs(mmid) != 24)) continue;
       const GenParticle& mgp = genParticleList_->at(index);
       int jmid = -1;
       int jndex = getMotherId(mgp, jmid);
-      if(jndex <0 ) continue;
-      if(std::abs(mmid) ==15 && std::abs(jmid) == 25){
-	if(pdgid == 11) genElList.push_back(gp);
-	if(pdgid == 13) genMuList.push_back(gp);
+      if (jndex < 0) continue;
+      if (std::abs(mmid) == 15 && std::abs(jmid) == 25) {
+	if (pdgid == 11) genElList.push_back(gp);
+	if (pdgid == 13) genMuList.push_back(gp);
       }
-      else if(jndex >= 0 && std::abs(jmid) != 6 && std::abs(mmid)!=15){ // ensure W does not come from t
-	if(pdgid == 11)  genElList.push_back(gp);
-	if(pdgid == 13) genMuList.push_back(gp);
+      else if (jndex >= 0 && std::abs(jmid) != 6 && std::abs(mmid) != 15) { // ensure W does not come from t
+	if (pdgid == 11)  genElList.push_back(gp);
+	if (pdgid == 13) genMuList.push_back(gp);
       }
      
     }
     
   }
-  if(genTauList.size() < 1) return;
-  if(genElList.size() == 1 && genMuList.size() == 1)
+  if (genTauList.size() < 1) return;
+  if (genElList.size() == 1 && genMuList.size() == 1)
     emt = true;
-  if(genElList.size() == 2 && genMuList.size() == 0)
+  if (genElList.size() == 2 && genMuList.size() == 0)
     eet = true;
-  if(genElList.size() == 0 && genMuList.size() == 2)
+  if (genElList.size() == 0 && genMuList.size() == 2)
     mmt = true;
 }
 int AnaBase::getMotherId(const GenParticle& gp, int& mmid) const {
@@ -1285,7 +1295,6 @@ void AnaBase::isGenMatchedDy(int leptonId, vector<GenParticle>& genObjList, bool
       genObjList.push_back(gp);
     }
 
-    ////////////////
     else  if (abs(leptonId) == 15) {
       if (status != 2) continue;
       int mmid = -1;
@@ -1306,7 +1315,6 @@ void AnaBase::isGenMatchedDy(int leptonId, vector<GenParticle>& genObjList, bool
       }
       if (ndau) genObjList.push_back(gp);
     }
-    ////
   }
   
   if (genObjList.size()>2) {

@@ -8,7 +8,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-
+#include <iostream>
 #include "TLorentzVector.h"
 #include "TVector.h"
 #include "TProfile.h"
@@ -16,6 +16,7 @@
 #include "TH1F.h"
 #include "TVector3.h"
 
+#include "TreeCloner.h"
 #include "PhysicsObjects.h"
 
 typedef unsigned int uint;
@@ -166,6 +167,7 @@ public:
   int ngenmet() const {return genMetList_->size();}
 
   TChain* chain() const {return chain_;}
+  TreeCloner* cloner() const {return cloner_;}
   TFile* histf() const {return histf_;}
 
   int nEvents() const {return nEvents_;}
@@ -174,6 +176,7 @@ public:
   std::ofstream& fLog() {return fLog_;}
   std::ofstream& evLog() {return evLog_;}
 
+  bool doEventClone() const {return cloneEvents_;}
   bool isMC() const {return isMC_;}
   bool isSignal() const {return isSignal_;}
   int logOption() const {return logOption_;}
@@ -202,6 +205,7 @@ private:
   TChain* chain_;      // chain contains a list of root files containing the same tree
   TFile* histf_;       // The output file with histograms
 
+  TreeCloner* cloner_;
   // The tree branches
   std::vector<vhtm::Event>* eventList_;
   std::vector<vhtm::Vertex>* vertexList_;
@@ -240,10 +244,12 @@ private:
   int logOption_;
   bool useTrigger_;
   bool usePUWt_;
+  bool cloneEvents_;
   std::vector<std::string> trigPathList_;
 
   std::string histFile_;
   std::string puHistFile_;
+  std::string clonedEvtFile_;
   bool useTrueNInt_;
   std::string logFile_;
   std::string evFile_;

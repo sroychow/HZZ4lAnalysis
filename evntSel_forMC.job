@@ -1,0 +1,51 @@
+START
+dataType mc
+readTrigObject 0
+puHistFile /afs/cern.ch/work/a/amodak/public/CSA14/CMSSW_7_0_7_patch1/src/15Sept2014/reweightFunctionFall12.root
+histFile  test_EvntSel_newfsrsync.root
+logFile   test_EvntSel_sync.out
+eventFile test_EvntSel_sync.out
+syncDumpFile syncDumpFile_newfsrsync.txt
+cloneFile selectedEvents_newfsrsync.root
+cloneEvents 1
+logOption 0
+maxEvent -1
+#not that it matters but 
+bunchX 25
+vtxCutList ndf=4 z=24 Rho=2
+muonCutList eta=2.4 pt=5. dxyPV=0.5 dzPV=1. SIP3D=4.
+electronCutList pt=7. eta=2.5 dxyPV=0.5 dzPV=1. missingHits=1 SIP3D=4.
+tauCutList eta=2.3 pt=10 dz=0.2 muVeto=0.5 eleVeto=0.5
+jetCutList eta=4.7 pt=30 dRlep=0.4 btagFactor=0.89
+#MassRange >>low = 0, high, fullblind, unblind
+evselCutList Isbkg=0 selectEvType=0 evType=1 massRange=3
+useTrigger 1
+##Choose Triggers depending on datasets
+##Electron Triggers
+trigPathList HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v 
+trigPathList HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v 
+##this is different for Spring15MC
+trigPathList HLT_Ele27_WP85_Gsf_v
+##Muon Triggers
+trigPathList HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v 
+trigPathList HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v 
+trigPathList HLT_TripleMu_12_10_5_v
+##Cross Triggers
+trigPathList HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
+trigPathList HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
+trigPathList HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v
+trigPathList HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v
+#single file
+#inputFile   /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/Spring15MINIAODv2/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC23rdOct.root
+inputFile /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/bx50/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC2ndDec1.root
+inputFile /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/bx50/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC2ndDec2.root
+#list of input files
+#inputFileList Flist.txt
+doKD 0
+checkGenInfo 0
+dumpGenInfo 0
+useEventList 0
+#eventId 1 671 133300
+eventId 1 1926 385190
+eventId 1 2264 220988
+END

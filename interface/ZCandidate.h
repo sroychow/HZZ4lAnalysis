@@ -7,11 +7,13 @@ struct ZCandidate {
   TLorentzVector l1P4;
   int l1Charge;
   double l1Isolation;
+  TLorentzVector l1FsrP4;
   
   int l2Index;
   TLorentzVector l2P4;
   int l2Charge;
   double l2Isolation;
+  TLorentzVector l2FsrP4;
   
   int fsrWithLep;
   TLorentzVector fsrPhoP4;

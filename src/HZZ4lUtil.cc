@@ -34,8 +34,9 @@ using std::setw;
 using std::ostream;
 
 namespace HZZ4lUtil {
-  double getEleRhoEffectiveArea(double eta) {
+  double getEleRhoEffectiveArea(double etax) {
     double area;
+    double eta = std::fabs(etax);
     if (eta >= 0.0 && eta < 0.8) area = 0.1830;
     else if (eta >= 0.8 && eta < 1.3) area = 0.1734;
     else if (eta >= 1.3 && eta < 2.0) area = 0.1077;
@@ -43,13 +44,116 @@ namespace HZZ4lUtil {
     else if (eta >= 2.2) area = 0.2680;
     return area;
   }
+
+  double getEleRhoEffectiveArea03(double etax) {
+    double area;
+     double eta = std::fabs(etax);
+    if (eta >= 0.0000 && 1.0000) area = 0.1752;
+    else if (eta >= 1.0000 && 1.4790) area = 0.1862;
+    else if (eta >= 1.4790 && 2.0000) area = 0.1411;
+    else if (eta >= 2.0000 && 2.2000) area = 0.1534;
+    else if (eta >= 2.2000 && 2.3000) area = 0.1903;
+    else if (eta >= 2.3000 && 2.4000) area = 0.2243;
+    else if (eta >= 2.4000 && 5.0000) area = 0.2687;
+    return area;
+  }
   double pfiso(const vhtm::Electron& ele, double eventRho, double fsrPhotonEtSum) {
-    return (ele.chargedHadronIso + std::max(0., ele.neutralHadronIso + ele.photonIso  - fsrPhotonEtSum
+    return (ele.chargedHadronIso + std::max(0., ele.neutralHadronIso + ele.photonIso - fsrPhotonEtSum
   					    - getEleRhoEffectiveArea(std::fabs(ele.eta)) * eventRho));
   }
+
+
   double pfiso(const vhtm::Muon& mu, double fsrPhotonEtSum) {
     return (mu.sumChargedHadronPt + std::max(0., mu.sumNeutralHadronEt + mu.sumPhotonEt - fsrPhotonEtSum - 0.5 * mu.sumPUPt));
   }
+  double pfiso(const vhtm::PackedPFCandidate& cand) {
+    return (cand.isolationMap.at("c30").at(0) 
+	    + cand.isolationMap.at("c30").at(2) 
+	    + cand.isolationMap.at("c30").at(3) 
+	    + cand.isolationMap.at("c30").at(4));
+  }
+  //***********************************not EG pog now uses scETA*********************************
+  double pfiso03(const vhtm::Electron& ele, double eventRho, double fsrPhotonEtSum) {
+    return ( ele.sumChargedHadronPt + 
+             std::max(0., ele.sumNeutralHadronEt + ele.sumPhotonEt - fsrPhotonEtSum
+                          - getEleRhoEffectiveArea03(std::fabs(ele.scEta)) * eventRho));
+  }
+
+  double pfiso03(const vhtm::Muon& mu, double fsrPhotonEtSum) {
+    return mu.pfChargedHadIsoR03 + std::max(0.0, mu.pfNeutralHadIsoR03 + mu.pfPhotonIso03 
+                                              - fsrPhotonEtSum - 0.5*mu.sumPUPt03);
+  }
+	
+  // Isolation in new FSR recovery scheme
+  // For each FSR photon that was selected, exclude that photon from the isolation cone of all leptons in the event 
+  // passing loose ID + SIP cut if it was in the isolation cone and outside the isolation veto
+  // (ele->supercluster()->eta() < 1.479 || dR > 0.08) for electrons 
+  double computeElectronReliso(const vhtm::Electron& ele, const std::vector<vhtm::PackedPFCandidate>& fsrVec, double eventRho,
+			       double vetoCone, double isoCone, bool verbose)
+  {
+    double phoEtSum = 0.;
+    TLorentzVector lP4 = getP4(ele);
+    for (const auto& v: fsrVec) {
+      TLorentzVector fsrP4 = getP4(v);
+      double dR = lP4.DeltaR(fsrP4);
+      if ((std::fabs(ele.scEta) < 1.479 || dR > vetoCone) && dR < isoCone)
+  	phoEtSum += fsrP4.Et();
+    }
+    double iso = 9999.;
+    if( isoCone == 0.3 ) iso = pfiso03(ele, eventRho, phoEtSum);
+    else iso = pfiso(ele, eventRho, phoEtSum);
+
+    if (verbose) {
+      cout << "electron isolation: " << endl;
+      cout << "      iso    lepPt  chHadPt neuHadEt photonEt    fsrEt  effArea eventRho" << endl;
+      cout << setprecision(3) 
+           << setw(9) << iso 
+           << setw(9) << lP4.Pt()
+  	   << setw(9) << ele.chargedHadronIso
+  	   << setw(9) << ele.neutralHadronIso 
+  	   << setw(9) << ele.photonIso
+  	   << setw(9) << phoEtSum
+  	   << setw(9) << getEleRhoEffectiveArea(std::fabs(lP4.Eta()))
+           << setw(9) << eventRho
+  	   << endl;
+    }
+    return iso/lP4.Pt();
+  }
+  // Isolation with new FSR recovery scheme
+  // For each FSR photon that was selected, exclude that photon from the isolation cone all leptons in the event 
+  // passing loose ID + SIP cut if it was in the isolation cone and outside the isolation veto
+  // dR > 0.01 for muons
+  double computeMuonReliso(const vhtm::Muon& mu, const std::vector<vhtm::PackedPFCandidate>& fsrP4Vec, 
+			   double vetoCone, double isoCone, bool verbose)
+  {
+    double phoEtSum = 0.;
+    TLorentzVector lP4 = getP4(mu);
+    for (const auto& v: fsrP4Vec) {
+      TLorentzVector fsrP4 = getP4(v);
+      double dR = lP4.DeltaR(fsrP4);
+      if (dR > vetoCone && dR < isoCone)
+  	phoEtSum += fsrP4.Et();
+    }
+    double iso = 9999.;
+    if( isoCone == 0.3 ) iso = pfiso03(mu, phoEtSum);
+    else iso = pfiso(mu, phoEtSum);
+
+    if (verbose) {
+      cout << "muon isolation: " << endl;
+      cout << "      iso    lepPt  chHadPt neuHadEt photonEt    fsrEt     PUPt" << endl;
+      cout << setprecision(3) 
+           << setw(9) << iso 
+           << setw(9) << lP4.Pt()
+  	   << setw(9) << mu.sumChargedHadronPt
+  	   << setw(9) << mu.sumNeutralHadronEt
+  	   << setw(9) << mu.sumPhotonEt
+  	   << setw(9) << phoEtSum
+  	   << setw(9) << mu.sumPUPt
+  	   << endl;
+    }
+    
+    return iso/lP4.Pt();
+  }  
   bool jetpuMVAid(const vhtm::Jet& jet) {
     float jpumva = jet.jpumva;
     double pt = jet.pt;
@@ -108,23 +212,22 @@ namespace HZZ4lUtil {
   	    centralCut);
   }
   bool electronBDT(const vhtm::Electron& electron) {
-
     double scEta = std::fabs(electron.scEta);
     double elePt = electron.pt;
-    double BDT = electron.BDT;
-    bool isBDT = (elePt <= 10 && ((scEta < 0.8 && BDT > -0.586)                     ||
-  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.712) ||
-  				  (scEta >= 1.479 && BDT > -0.662)))                 ||
-                 (elePt >  10 && ((scEta < 0.8 && BDT > -0.652)                     ||
-  				  ((scEta >= 0.8 && scEta < 1.479) && BDT > -0.701) ||
-  				  (scEta >= 1.479 && BDT > -0.350)));
+    double BDT = electron.BDT; //preComp;
+    bool isBDT = (elePt <= 10 && ((scEta < 0.8                   && BDT > -0.265)   ||
+                                  (scEta >= 0.8 && scEta < 1.479 && BDT > -0.556)   ||
+                                  (scEta >= 1.479                && BDT > -0.551))) ||
+                 (elePt > 10  && ((scEta < 0.8                   && BDT > -0.072)   ||
+                                  (scEta >= 0.8 && scEta < 1.479 && BDT > -0.286)   || 
+                                  (scEta >= 1.479                && BDT > -0.267)));
     return isBDT;
   }
   void printZCandidate(const ZCandidate& Za, const std::string& tag, std::ostream& os) {
     os << std::setprecision(3);
     os << tag << endl;
     os << " -- Leptons: " << endl;
-    os << "  indx      pT     eta     phi  energy  charge  reliso"
+    os << "  indx      pT     eta     phi  energy  charge  reliso   fsrPt"
        << endl; 
     os << setw(6) << 1
        << setw(8) << Za.l1P4.Pt()
@@ -133,6 +236,7 @@ namespace HZZ4lUtil {
        << setw(8) << Za.l1P4.Energy()
        << setw(8) << Za.l1Charge
        << setw(8) << Za.l1Isolation
+       << setw(8) << Za.l1FsrP4.Pt()
        << endl;
     os << setw(6) << 2
        << setw(8) << Za.l2P4.Pt()
@@ -141,10 +245,11 @@ namespace HZZ4lUtil {
        << setw(8) << Za.l2P4.Energy()
        << setw(8) << Za.l2Charge
        << setw(8) << Za.l2Isolation
+       << setw(8) << Za.l2FsrP4.Pt()
        << endl;
     
     if (Za.fsrPhoP4.Et() > 2) {
-      os << " -- FSR Photon: " << endl;
+      os << " -- FSR Photons (combined for both leptons): " << endl;
       os << "       eT     eta     phi   energy" 
   	 << endl; 
       os << setw(9) << Za.fsrPhoP4.Et()
@@ -226,125 +331,6 @@ namespace HZZ4lUtil {
        << category 
        << endl;
   }
-  // -- from twiki --
-  // for each photon attached to a lepton of each Z, test if the ll(g) candidate would satisfy the two criteria:
-  // 4 < m(llg))) < 100 GeV
-  // |m(llg)))-91.1876| < |m(ll)-91.1876| 
-  void selectFSRPhoforLepton(const TLorentzVector& lep1P4, const TLorentzVector& lep2P4,
-  					const vector<vhtm::PackedPFCandidate>& lepprePhoVec,
-  					vector<vhtm::PackedPFCandidate>& lepPhoVec) 
-  {
-    for (const auto& v: lepprePhoVec) {
-      const TLorentzVector& pfPhoP4 = getP4(v);
-      double mass = (lep1P4 + lep2P4 + pfPhoP4).M();
-      if ((mass > 4. && mass < 100.)
-  	  && std::fabs(mass - MZnominal) < std::fabs((lep1P4 + lep2P4).M() - MZnominal))
-  	lepPhoVec.push_back(v);
-    }
-    if (lepPhoVec.size() > 1) 
-      std::sort(lepPhoVec.begin(), lepPhoVec.end(), PtComparator<vhtm::PackedPFCandidate>());
-  }
-  // -- from twiki --
-  // if within the same Z multiple photons satisfy these criteria, pick the best one according to this logic:
-  //    - if there's at least one photon with pT > 4 GeV, pick the one with highest pT
-  //    - if all photons have pT < 4 GeV, pick the one that has the smallest dR to its closest lepton. 
-  int selectBestFSRforLepton(const TLorentzVector& lepP4, const vector<vhtm::PackedPFCandidate>& lepPhoVec) {
-    int index = -1;
-    if (lepPhoVec[0].pt > 4.) index = 0;
-    else {
-      double dRmin = 999.;
-      for (unsigned int i = 0; i < lepPhoVec.size(); ++i) {
-  	const TLorentzVector& phoP4 = getP4(lepPhoVec[i]);
-  	double dR = phoP4.DeltaR(lepP4);
-  	if (dR < dRmin) {
-  	  index = i;
-  	  dRmin = dR;
-  	}
-      }
-    }
-    return index;
-  }
-  void addFSRtoAltZ(const ZCandidate& Z1Cand, const ZCandidate& Z2Cand, 
-  		    int l1indx, int l2indx, TLorentzVector& altZP4, const std::string& tag, bool verbose) {
-    if (Z1Cand.fsrWithLep == l1indx) {
-      if (std::fabs((altZP4+Z1Cand.fsrPhoP4).M() - MZnominal) < std::fabs(altZP4.M() - MZnominal)) {
-  	if (verbose) cout << "--- SmartCut: adding Photon, l1indx: " << l1indx 
-  			  << ", Photon pT: " << Z1Cand.fsrPhoP4.Pt() << tag 
-  			  << endl;
-  	altZP4 += Z1Cand.fsrPhoP4;
-      }
-    }
-    if (Z2Cand.fsrWithLep == l2indx) {
-      if (std::fabs((altZP4+Z2Cand.fsrPhoP4).M() - MZnominal) < std::fabs(altZP4.M() - MZnominal)) {
-  	if (verbose) cout << "--- SmartCut: adding Photon, l2indx: " << l2indx 
-  			  << ", Photon pT: " << Z2Cand.fsrPhoP4.Pt() << tag 
-  			  << endl;
-  	altZP4 += Z2Cand.fsrPhoP4;
-      }
-    }
-  }
-  // -- from twiki --
-  // For each FSR photon that was selected, exclude that photon from the photon isolation sum of all four leptons of both Zs
-  // (Note that in Run I we were instead doing this only for the Z the photon is attached to) if it was in the isolation cone
-  // and outside the isolation veto (ΔR>0.01 for muons and (ele->supercluster()->eta() < 1.479 || dR > 0.08) for electrons;
-  // note: these requirements should probably be rechecked for consistency with isolation algorithms)
-  double computeElectronIso(const vhtm::Electron& ele, const ZCandidate& Za, const TLorentzVector& lP4,
-  				       const std::vector<TLorentzVector>& fsrVec, double eventRho,
-  				       double vetoCone, double isoCone, bool verbose)
-  {
-    double phoEtSum = 0.;
-    for (const auto& v: fsrVec) {
-      if ((std::fabs(ele.scEta) < 1.479 || lP4.DeltaR(v) > vetoCone) && lP4.DeltaR(v) < isoCone)
-  	phoEtSum += v.Et();
-    }
-    double iso = pfiso(ele, eventRho, phoEtSum);
-    if (verbose)
-      cout << "lepton isolation: " << iso << ", " << lP4.Pt() << ", "
-  	   << ele.chargedHadronIso << ", "
-  	   << ele.neutralHadronIso << ", "
-  	   << ele.photonIso << ", "
-  	   << phoEtSum << ", " 
-  	   << getEleRhoEffectiveArea(std::fabs(lP4.Eta())) << ", " 
-  	   << eventRho
-  	   << endl;
-    
-    return iso/lP4.Pt();
-  }
-  // -- from twiki --
-  // For each FSR photon that was selected, exclude that photon from the photon isolation sum of all four leptons of both Zs
-  // (Note that in Run I we were instead doing this only for the Z the photon is attached to) if it was in the isolation cone
-  // and outside the isolation veto (ΔR>0.01 for muons and (ele->supercluster()->eta() < 1.479 || dR > 0.08) for electrons;
-  // note: these requirements should probably be rechecked for consistency with isolation algorithms)
-  double computeMuonIso(const vhtm::Muon& mu, const ZCandidate& Za, const TLorentzVector& lP4,
-  			const std::vector<TLorentzVector>& fsrVec, 
-  			double vetoCone, double isoCone, bool verbose)
-  {
-    double phoEtSum = 0.;
-    for (const auto& v: fsrVec) {
-      if (lP4.DeltaR(v) > vetoCone && lP4.DeltaR(v) < isoCone)
-  	phoEtSum += v.Et();
-    }
-    double iso = pfiso(mu, phoEtSum);
-    if (verbose) 
-      cout << "l1 isolation: " << iso << ", " << lP4.Pt() << ", "
-  	   << mu.sumChargedHadronPt << ", "
-  	   << mu.sumNeutralHadronEt << ", "
-  	   << mu.sumPhotonEt << ", "
-  	   << phoEtSum << ", " 
-  	   << mu.sumPUPt
-  	   << endl;
-    
-    return iso/lP4.Pt();
-  }  
-  void printP4(const TLorentzVector& lv, const string& tag) {
-    cout << setprecision(3);
-    cout << tag << " = (" 
-  	 << setw(7) << lv.Pt()  << "," 
-  	 << setw(7) << lv.Eta() << "," 
-  	 << setw(7) << lv.Phi() << "," 
-  	 << setw(7) << lv.Energy() << ")" 
-  	 << endl;
-  }
   void showEfficiency(const string& hname, const string slist[], const string& tag) {
     cout << ">>> " << tag << " Efficiency" << endl;
     TH1 *h = AnaUtil::getHist1D(hname);
@@ -362,8 +348,27 @@ namespace HZZ4lUtil {
   	     << setw(10) << int(h->GetBinContent(i))
   	     << setprecision(5) 
   	     << setw(10) << ((h->GetBinContent(1)>0) ? h->GetBinContent(i)/h->GetBinContent(1) : 0.0)
-  	     << setw(10) << ( i == 1?1.0:(h->GetBinContent(i-1)>0) ? h->GetBinContent(i)/h->GetBinContent(i-1) : 0.0)
+  	     << setw(10) << ( i == 1 ? 1.0 : (h->GetBinContent(i-1)>0) ? h->GetBinContent(i)/h->GetBinContent(i-1) : 0.0)
   	     << endl;
     }
+  }
+  void printP4(const TLorentzVector& lv, const string& tag) {
+    cout << setprecision(3);
+    cout << tag << " = (" 
+  	 << setw(7) << lv.Pt()  << "," 
+  	 << setw(7) << lv.Eta() << "," 
+  	 << setw(7) << lv.Phi() << "," 
+  	 << setw(7) << lv.Energy() << ")" 
+  	 << endl;
+  }
+  bool fsrPhotonP4(const vector<vhtm::PackedPFCandidate>& fsrList, TLorentzVector& p4) {
+    bool hasFsr = false;
+    p4.SetPtEtaPhiE(0., 0., 0., 0);  
+    if (!fsrList.empty()) {
+      const vhtm::PackedPFCandidate& cand = fsrList[0]; // only the first one is important
+      p4.SetPtEtaPhiE(cand.pt, cand.eta, cand.phi, cand.energy);
+      hasFsr = true;
+    }
+    return hasFsr;
   }
 }

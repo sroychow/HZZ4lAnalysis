@@ -1,6 +1,22 @@
-#include "interface/PhysicsObjects.h"
+#include "PhysicsObjects.h"
 
 #define NEL(x) (sizeof((x))/sizeof((x)[0]))
+
+ClassImp(vhtm::Event)
+ClassImp(vhtm::GenEvent)
+ClassImp(vhtm::Electron)
+ClassImp(vhtm::GenParticle)
+ClassImp(vhtm::GenJet)
+ClassImp(vhtm::GenMET)
+ClassImp(vhtm::MET)
+ClassImp(vhtm::Tau)
+ClassImp(vhtm::Muon)
+ClassImp(vhtm::Jet)
+ClassImp(vhtm::Vertex)
+ClassImp(vhtm::TriggerObject)
+ClassImp(vhtm::Candidate)
+ClassImp(vhtm::Photon)
+ClassImp(vhtm::PackedPFCandidate)
 
 vhtm::Candidate::Candidate():
   pt(-999), eta(-999), phi(-999) {} vhtm::Candidate::Candidate(float _pt, float _eta, float _phi):
@@ -88,6 +104,7 @@ vhtm::Electron::Electron():
   scET(-999),
   scRawEnergy(-999),
   BDT(-999),
+  BDTpreComp(-999),
   dxyPV(-999),
   dzPV(-999),
   vtxDist3D(-999),
@@ -113,7 +130,10 @@ vhtm::Electron::Electron():
   mvaPreselection(false),
   isTriggerElectron(false),
   fidFlag(0),
-  selbit(0)
+  selbit(0),
+  passMediumId(false),
+  passTightId(false),
+  mvaCategory(false)
 {
   idmap.clear();
 }
@@ -243,6 +263,7 @@ vhtm::Muon::Muon():
   hcalIso(-999),
   hoIso(-999),
   pfChargedIsoR03(-999),
+  pfChargedHadIsoR03(999.),
   pfNeutralHadIsoR03(999.),
   pfPhotonIso03(999.),
   sumPUPt03(-999),
@@ -315,6 +336,7 @@ vhtm::Jet::Jet():
   combinedSecondaryVertexBTag(-999),
   //combinedSecondaryVertexMVABTag(-999),
   combinedInclusiveSecondaryVertexBTag(-999),
+  pfCombinedInclusiveSecondaryVertexV2BJetTags(-999.),
   //combinedMVABTag(-999),
   jpumva(9999.),
   passLooseID(-1),
