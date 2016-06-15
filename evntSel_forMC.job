@@ -19,7 +19,8 @@ tauCutList eta=2.3 pt=10 dz=0.2 muVeto=0.5 eleVeto=0.5
 jetCutList eta=4.7 pt=30 dRlep=0.4 btagFactor=0.89
 #MassRange >>low = 0, high, fullblind, unblind
 evselCutList Isbkg=0 selectEvType=0 evType=1 massRange=3
-useTrigger 1
+###no trigger in 80 as of now
+useTrigger 0
 ##Choose Triggers depending on datasets
 ##Electron Triggers
 trigPathList HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v 
@@ -36,9 +37,7 @@ trigPathList HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
 trigPathList HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v
 trigPathList HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v
 #single file
-#inputFile   /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/Spring15MINIAODv2/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC23rdOct.root
-inputFile /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/bx50/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC2ndDec1.root
-inputFile /afs/cern.ch/work/s/sroychow/public/HZZ4l/forData/bx50/CMSSW_7_4_14/src/HZZ4lminiAOD_CATSYNC2ndDec2.root
+inputFile /afs/cern.ch/work/s/sroychow/public/HZZ4l/New2016/FrameWork/CMSSW_8_0_7_patch3/src/job1/HZZ4lminiAOD_80XMCsync.root
 #list of input files
 #inputFileList Flist.txt
 doKD 0

@@ -66,6 +66,7 @@ class PhysicsObjSelector: public AnaBase {
   void clear();
   
   bool passedSuperClusterVeto(const vhtm::PackedPFCandidate& pfcand, bool verbose=false) const;
+  bool passedSuperClusterVetobyReference(const vhtm::PackedPFCandidate& pfcand, bool verbose=false) const;
   double findClosestLepton(const vhtm::PackedPFCandidate& photon, int& muindx, int& elindx) const;
   void leptonCrossCleaning();
   bool crossCleaned(const vhtm::Electron& electron) const;

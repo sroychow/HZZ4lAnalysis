@@ -106,7 +106,8 @@ void PhysicsObjSelector::muonSelector(double wt) {
     looseMuVec_.push_back(muon);
 
     // tight muon 
-    if (muon.isPFMuon) {
+    bool isTight = muon.isPFMuon || (muon.passTrackerhighPtid && muon.pt > 200.);
+    if (isTight) {
       AnaUtil::fillHist1D("muCutFlow", 9, wt);
       tightMuVec_.push_back(muon);
     }
@@ -205,11 +206,8 @@ void PhysicsObjSelector::photonSelector() {
       // and threshold as per charged isolation) 
       double iso = HZZ4lUtil::pfiso(pfcand);
       if (iso/pfcand.pt >= 1.8)                                                  continue;
-      
-      // Supercluster veto: remove all PF photons that match with any electron passing loose ID 
-      // and SIP cuts; matching is according to (|dphi| < 2, |deta| < 0.05) OR (dR < 0.15), with 
-      // respect to the electron's supercluster
-      if (!passedSuperClusterVeto(pfcand, false))                                continue;
+      //new in 2016
+      if (!passedSuperClusterVetobyReference(pfcand, false))                                continue;
       
       // Photons are associated to the closest lepton in the event among all those passing loose ID + SIP cut
       // It is constructed in such a way that we must check elindx first 
@@ -418,6 +416,33 @@ bool PhysicsObjSelector::passedSuperClusterVeto(const vhtm::PackedPFCandidate& p
   }
   return passedVeto;
 }
+bool PhysicsObjSelector::passedSuperClusterVetobyReference(const vhtm::PackedPFCandidate& pfcand, bool verbose) const {
+  // Supercluster veto by PF reference: veto all the PF candidates used in the PF cluster, as returned by the method 
+  bool passedVeto = true;
+  TLorentzVector pfcandP4 = HZZ4lUtil::getP4(pfcand);
+  if (verbose && looseEleVec_.size())
+    cout << "    pfPt   pfEta   pfPhi   elePt   scEta  elePhi    dEta    dPhi      dR" << endl;
+  for (const auto& ele: looseEleVec_) {
+    for(const auto& prefP4 : ele.associatedPackedPFCandidatesP4 ) {
+      if(pfcandP4 == prefP4) {
+        passedVeto = false;
+        break;
+      }
+    }
+    if(!passedVeto)   break;
+    if (verbose) {
+      cout << setprecision(3);
+      cout << setw(8) << pfcand.pt
+	   << setw(8) << pfcand.eta
+	   << setw(8) << pfcand.phi
+	   << setw(8) << ele.pt
+	   << setw(8) << ele.scEta
+	   << setw(8) << ele.scPhi
+	   << endl;
+    }
+  }
+  return passedVeto;
+}
 double PhysicsObjSelector::findClosestLepton(const vhtm::PackedPFCandidate& pfPho, int& muindx, int& elindx) const {
   TLorentzVector phoP4 = HZZ4lUtil::getP4(pfPho);
   double dRmin = 999;
@@ -612,7 +637,7 @@ void PhysicsObjSelector::dumpEvent(bool dumpGen, bool showEvent, ostream& os) co
 	 << setw(8) << pfcand.eta
 	 << setw(8) << pfcand.phi
 	 << setw(8) << iso/pfcand.pt
-	 << setw(14) << (passedSuperClusterVeto(pfcand) ? "yes" : "no")
+	 << setw(14) << (passedSuperClusterVetobyReference(pfcand) ? "yes" : "no")
 	 << setw(14) << ltype.str()
 	 << setw(8) << dRmin
          << setprecision(2)
