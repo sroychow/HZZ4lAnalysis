@@ -78,6 +78,7 @@ vhtm::Electron::Electron():
   phi(-999),
   pt(-999),
   ecalDriven(false),
+  isGap(false),
   hasGsfTrack(false),
   trackPt(-999),
   energy(-999),
@@ -133,7 +134,8 @@ vhtm::Electron::Electron():
   selbit(0),
   passMediumId(false),
   passTightId(false),
-  mvaCategory(false)
+  mvaCategory(false),
+  ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values(-999.)
 {
   idmap.clear();
 }
@@ -247,6 +249,7 @@ vhtm::Muon::Muon():
   isTrackerMuon(false),
   isPFMuon(false),
   isghostCleaned(false),
+  passTrackerhighPtid(false),
   eta(-999),
   phi(-999),
   pt(-999),

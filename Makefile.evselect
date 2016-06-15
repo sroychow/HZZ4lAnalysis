@@ -9,7 +9,7 @@ HSUF   = h
 DICTC  = Dict.$(CSUF)
 DICTH  = $(patsubst %.$(CSUF),%.h,$(DICTC))
 
-SRCS   = src/PhysicsObjects.cc src/AnaUtil.cc src/HZZ4lUtil.cc src/AnaBase.cc src/PhysicsObjSelector.cc src/EventSelection.cc src/evntSelection.cc
+SRCS   = src/PhysicsObjects.cc src/AnaUtil.cc src/HZZ4lUtil.cc src/TreeCloner.cc src/AnaBase.cc src/PhysicsObjSelector.cc src/EventSelection.cc src/evntSelection.cc
 OBJS   = $(patsubst %.$(CSUF), %.o, $(SRCS))
 
 LDFLAGS  = -g
@@ -33,9 +33,7 @@ $(EXE): $(OBJS) src/Dict.o
 $(DICTC): $(HDRS_DICT)
 	echo "Generating dictionary $(DICTC) and $(DICTH) ..."
 	rootcint -f $@ $(CXXFLAGS) $^
-	perl -pi -e 's#interface/##' $(DICTH)
 	mv $(DICTC) src/ 
-	mv $(DICTH) interface/
  
 # Create object files
 %.o : %.$(CSUF)
@@ -53,4 +51,4 @@ include Makefile.dep
 # Clean 
 .PHONY   : clean 
 clean : 
-	@-rm $(OBJS) $(EXE) interface/$(DICTH) src/$(DICTC) src/Dict.o
+	@-rm $(OBJS) $(EXE) src/$(DICTC) src/Dict.o

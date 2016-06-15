@@ -2,19 +2,12 @@
 namespace vhtm {  }
 namespace std {  }
 
-[ ]
+[ libAnalysisSpaceTreeMaker.so ]
 # List of selected classes
 class map<double,std::vector<double> >
 class map<double,vector<double> >
 class map<std::string,std::vector<double> >
-class map<std::string,unsigned int>
-class map<string,unsigned int>
 class map<string,vector<double> >
-class pair<std::string,unsigned int>
-class pair<string,unsigned int>
-class pair<vhtm::Muon,vhtm::Muon>
-class vector<std::string>
-class vector<string>
 class vector<vhtm::Candidate>
 class vector<vhtm::Electron>
 class vector<vhtm::Event>
@@ -45,4 +38,4 @@ class vhtm::Photon
 class vhtm::Tau
 class vhtm::TriggerObject
 class vhtm::Vertex
-header PhysicsObjects.h
+header AnalysisSpace/TreeMaker/interface/PhysicsObjects.h

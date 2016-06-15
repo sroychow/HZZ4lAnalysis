@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
-
+#include "TLorentzVector.h"
 #include "TObject.h"
 
 namespace vhtm {
@@ -108,6 +108,7 @@ namespace vhtm {
     double phi;
     double pt;
     bool ecalDriven;
+    bool isGap;
     bool hasGsfTrack;
     double trackPt;
     double energy;
@@ -178,7 +179,9 @@ namespace vhtm {
     bool passMediumId;
     bool passTightId;
     int mvaCategory;
+    float ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values;
     std::map< std::string,std::vector<double> > isolationMap;
+    std::vector<TLorentzVector> associatedPackedPFCandidatesP4;
 
     ClassDef(Electron, 1)
   };
@@ -325,6 +328,7 @@ namespace vhtm {
     bool isTrackerMuon;
     bool isPFMuon;
     bool isghostCleaned;
+    bool passTrackerhighPtid;
 
     double eta;
     double phi;
