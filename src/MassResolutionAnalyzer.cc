@@ -55,16 +55,6 @@ using namespace vhtm;
 MassResolutionAnalyzer::MassResolutionAnalyzer()
   : PhysicsObjSelector()
 {
-  tfout_ = TFile::Open("massResolutionInput.root","RECREATE");
-  tfout_->cd();
-  massRtree_ = new TTree("mRestree","mass resolution study tree");
-  massRtree_->Branch("massZ",&mr.m);
-  massRtree_->Branch("massZErr", &mr.merr);
-  massRtree_->Branch("eta1", &mr.eta1);
-  massRtree_->Branch("eta2",&mr.eta2);
-  massRtree_->Branch("pT1",&mr.pT1);
-  massRtree_->Branch("pT2",&mr.pT2);
-  massRtree_->Branch("weight",&mr.w);
 }
 // ----------
 // Destructor
@@ -76,8 +66,19 @@ MassResolutionAnalyzer::~MassResolutionAnalyzer()
 // -------------------------------------------------------
 bool MassResolutionAnalyzer::beginJob() 
 { 
+  //open the output tree
+  tfout_ = TFile::Open(treeFileName_.c_str(),"RECREATE");
+  tfout_->cd();
+  massRtree_ = new TTree("mRestree","mass resolution study tree");
+  massRtree_->Branch("massZ",&mr.m);
+  massRtree_->Branch("massZErr", &mr.merr);
+  massRtree_->Branch("eta1", &mr.eta1);
+  massRtree_->Branch("eta2",&mr.eta2);
+  massRtree_->Branch("pT1",&mr.pT1);
+  massRtree_->Branch("pT2",&mr.pT2);
+  massRtree_->Branch("weight",&mr.w);
+
   PhysicsObjSelector::beginJob();
-  
   // Open the output ROOT file
   histf()->cd();
   PhysicsObjSelector::bookHistograms();
@@ -90,8 +91,6 @@ bool MassResolutionAnalyzer::beginJob()
   mr.pT1 = -1.;
   mr.pT2 = -1.;
   mr.w = 1.;
-
-
 }
 // ---------------
 // Book Common histograms
@@ -127,13 +126,10 @@ void MassResolutionAnalyzer::eventLoop()
   // Initialize analysis
   if (!beginJob()) return;
   int nPrint = max(10000, nEvents()/1000);
-
   Options op;
   op.verbose = false;
   op.usesbit = true;  // Crucial
   op.printselected = false;
-  
-  
   // --------------------
   // Start the event loop
   // --------------------
@@ -273,6 +269,8 @@ bool MassResolutionAnalyzer::readJob(const string& jobFile, int& nFiles)
     assert(tokens.size() > 1);
     string key = tokens[0];
     string value = tokens[1];
+    if(key == "masstreeFile")
+      treeFileName_ = value;
     tokens.clear();
   }
   // Close the file

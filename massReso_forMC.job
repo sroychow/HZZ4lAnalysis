@@ -7,6 +7,7 @@ logFile   test_EvntSel_sync.out
 eventFile test_EvntSel_sync.out
 syncDumpFile syncDumpFile_newfsrsync.txt
 cloneFile selectedEvents_newfsrsync.root
+masstreeFile massResolutionInput1.root
 cloneEvents 0
 logOption 0
 maxEvent -1
@@ -19,7 +20,7 @@ tauCutList eta=2.3 pt=10 dz=0.2 muVeto=0.5 eleVeto=0.5
 jetCutList eta=4.7 pt=30 dRlep=0.4 btagFactor=0.89
 #MassRange >>low = 0, high, fullblind, unblind
 evselCutList Isbkg=0 selectEvType=0 evType=1 massRange=3
-useTrigger 0
+useTrigger 1
 ##Choose Triggers depending on datasets
 trigPathList HLT_IsoMu20_v
 trigPathList HLT_IsoTkMu20_v

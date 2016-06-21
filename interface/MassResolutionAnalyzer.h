@@ -58,5 +58,6 @@ public:
   TTree* massRtree_;
   mresVar mr;
   TFile* tfout_;
+  std::string treeFileName_;
 };
 #endif
