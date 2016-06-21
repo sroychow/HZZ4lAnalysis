@@ -30,6 +30,7 @@ class vector<vhtm::Photon>
 class vector<vhtm::Tau>
 class vector<vhtm::TriggerObject>
 class vector<vhtm::Vertex>
+class vector<vhtm::ZtnP>
 class vhtm::Candidate
 class vhtm::Electron
 class vhtm::Event
@@ -42,7 +43,9 @@ class vhtm::MET
 class vhtm::Muon
 class vhtm::PackedPFCandidate
 class vhtm::Photon
+class vhtm::SelectedEvent
 class vhtm::Tau
 class vhtm::TriggerObject
 class vhtm::Vertex
+class vhtm::ZtnP
 header PhysicsObjects.h

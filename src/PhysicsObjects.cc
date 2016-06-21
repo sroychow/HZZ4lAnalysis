@@ -17,6 +17,8 @@ ClassImp(vhtm::TriggerObject)
 ClassImp(vhtm::Candidate)
 ClassImp(vhtm::Photon)
 ClassImp(vhtm::PackedPFCandidate)
+ClassImp(vhtm::SelectedEvent)
+ClassImp(vhtm::ZtnP)
 
 vhtm::Candidate::Candidate():
   pt(-999), eta(-999), phi(-999) {} vhtm::Candidate::Candidate(float _pt, float _eta, float _phi):
@@ -81,7 +83,7 @@ vhtm::Electron::Electron():
   hasGsfTrack(false),
   trackPt(-999),
   energy(-999),
-  caloEnergy(-999),
+  caloEnergy(-999.),
   charge(-999),
   pixHits(-1),
   trkHits(-1),
@@ -133,7 +135,10 @@ vhtm::Electron::Electron():
   selbit(0),
   passMediumId(false),
   passTightId(false),
-  mvaCategory(false)
+  mvaCategory(false),
+  pterr(999.),
+  perr(999.),
+  isGap(0)
 {
   idmap.clear();
 }
@@ -249,7 +254,8 @@ vhtm::Muon::Muon():
   isghostCleaned(false),
   eta(-999),
   phi(-999),
-  pt(-999),
+  pt(-999.),
+  pterr(-999.),
   p(-999),
   energy(-999),
   charge(-999),
@@ -302,7 +308,11 @@ vhtm::Muon::Muon():
   stationGapMaskPull(0),
   muonID(false),
   nSegments(-1),
-  selbit(0)
+  selbit(0),
+  newKpt(-1),
+  newKpterr(-1),
+  smearedKpt(-1),
+  smearedKpterr(-1)
 {}
 
 vhtm::Jet::Jet():
@@ -448,3 +458,54 @@ vhtm::Photon::Photon():
   dPhiTracksAtEcal(-999),
   dEtaTracksAtEcal(-999),
   selbit(0) {}
+
+vhtm::SelectedEvent::SelectedEvent() : 
+      run(0),
+      lumi(0),
+      event(0),
+      mass4l(0.),
+      mZ1(0.),
+      mZ2(0.),
+      nJets(0),
+      jet1pt(0.),
+      jet2pt(0.),
+      category(0),
+      m4lRefit(0.),
+      m4lRefitError(0.),
+      weight(0.),
+      flavour(4)	
+{
+      kd["Dgg10_VAMCFM"] = -1.; 
+      kd["D_bkg_kin"] = -1.; 
+      kd["D_bkg"] = -1.; 
+      kd["D_g4"] = -1.; 
+      kd["Djet_VAJHU"] = -1.;
+}
+
+void vhtm::SelectedEvent::reset() 
+{
+      run = 0;
+      lumi = 0;
+      event = 0;
+      mass4l = 0.;
+      mZ1 = 0.;
+      mZ2 = 0.;
+      nJets = 0.;
+      jet1pt = 0.;
+      jet2pt = 0.;
+      category = 0;
+      m4lRefit = 0.;
+      m4lRefitError = 0.;
+      weight = 0.;
+      kd["Dgg10_VAMCFM"] = -1.; 
+      kd["D_bkg_kin"] = -1.; 
+      kd["D_bkg"] = -1.; 
+      kd["D_g4"] = -1.; 
+      kd["Djet_VAJHU"] = -1.;
+      flavour = 4;
+}
+
+vhtm::ZtnP::ZtnP() 
+{
+  flavour = 2;
+}
