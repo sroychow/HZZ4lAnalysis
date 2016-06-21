@@ -33,7 +33,6 @@ $(EXE): $(OBJS) src/Dict.o
 $(DICTC): $(HDRS_DICT)
 	echo "Generating dictionary $(DICTC) and $(DICTH) ..."
 	rootcint -f $@ $(CXXFLAGS) $^
-	perl -pi -e 's#interface/##' $(DICTH)
 	mv $(DICTC) src/ 
  
 # Create object files

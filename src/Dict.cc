@@ -215,7 +215,7 @@ namespace ROOT {
       ::vhtm::GenParticle *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::GenParticle >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::GenParticle", ::vhtm::GenParticle::Class_Version(), "PhysicsObjects.h", 185,
+         instance("vhtm::GenParticle", ::vhtm::GenParticle::Class_Version(), "PhysicsObjects.h", 190,
                   typeid(::vhtm::GenParticle), DefineBehavior(ptr, ptr),
                   &::vhtm::GenParticle::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::GenParticle) );
@@ -247,7 +247,7 @@ namespace ROOT {
       ::vhtm::GenJet *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::GenJet >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::GenJet", ::vhtm::GenJet::Class_Version(), "PhysicsObjects.h", 212,
+         instance("vhtm::GenJet", ::vhtm::GenJet::Class_Version(), "PhysicsObjects.h", 217,
                   typeid(::vhtm::GenJet), DefineBehavior(ptr, ptr),
                   &::vhtm::GenJet::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::GenJet) );
@@ -279,7 +279,7 @@ namespace ROOT {
       ::vhtm::GenMET *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::GenMET >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::GenMET", ::vhtm::GenMET::Class_Version(), "PhysicsObjects.h", 479,
+         instance("vhtm::GenMET", ::vhtm::GenMET::Class_Version(), "PhysicsObjects.h", 491,
                   typeid(::vhtm::GenMET), DefineBehavior(ptr, ptr),
                   &::vhtm::GenMET::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::GenMET) );
@@ -311,7 +311,7 @@ namespace ROOT {
       ::vhtm::MET *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::MET >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::MET", ::vhtm::MET::Class_Version(), "PhysicsObjects.h", 227,
+         instance("vhtm::MET", ::vhtm::MET::Class_Version(), "PhysicsObjects.h", 232,
                   typeid(::vhtm::MET), DefineBehavior(ptr, ptr),
                   &::vhtm::MET::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::MET) );
@@ -343,7 +343,7 @@ namespace ROOT {
       ::vhtm::Tau *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::Tau >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::Tau", ::vhtm::Tau::Class_Version(), "PhysicsObjects.h", 241,
+         instance("vhtm::Tau", ::vhtm::Tau::Class_Version(), "PhysicsObjects.h", 246,
                   typeid(::vhtm::Tau), DefineBehavior(ptr, ptr),
                   &::vhtm::Tau::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::Tau) );
@@ -375,7 +375,7 @@ namespace ROOT {
       ::vhtm::Muon *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::Muon >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::Muon", ::vhtm::Muon::Class_Version(), "PhysicsObjects.h", 320,
+         instance("vhtm::Muon", ::vhtm::Muon::Class_Version(), "PhysicsObjects.h", 325,
                   typeid(::vhtm::Muon), DefineBehavior(ptr, ptr),
                   &::vhtm::Muon::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::Muon) );
@@ -448,7 +448,7 @@ namespace ROOT {
       ::vhtm::Jet *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::Jet >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::Jet", ::vhtm::Jet::Class_Version(), "PhysicsObjects.h", 404,
+         instance("vhtm::Jet", ::vhtm::Jet::Class_Version(), "PhysicsObjects.h", 416,
                   typeid(::vhtm::Jet), DefineBehavior(ptr, ptr),
                   &::vhtm::Jet::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::Jet) );
@@ -480,7 +480,7 @@ namespace ROOT {
       ::vhtm::Vertex *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::Vertex >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::Vertex", ::vhtm::Vertex::Class_Version(), "PhysicsObjects.h", 455,
+         instance("vhtm::Vertex", ::vhtm::Vertex::Class_Version(), "PhysicsObjects.h", 467,
                   typeid(::vhtm::Vertex), DefineBehavior(ptr, ptr),
                   &::vhtm::Vertex::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::Vertex) );
@@ -512,7 +512,7 @@ namespace ROOT {
       ::vhtm::Photon *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::Photon >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::Photon", ::vhtm::Photon::Class_Version(), "PhysicsObjects.h", 504,
+         instance("vhtm::Photon", ::vhtm::Photon::Class_Version(), "PhysicsObjects.h", 516,
                   typeid(::vhtm::Photon), DefineBehavior(ptr, ptr),
                   &::vhtm::Photon::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::Photon) );
@@ -544,7 +544,7 @@ namespace ROOT {
       ::vhtm::TriggerObject *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::TriggerObject >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("vhtm::TriggerObject", ::vhtm::TriggerObject::Class_Version(), "PhysicsObjects.h", 490,
+         instance("vhtm::TriggerObject", ::vhtm::TriggerObject::Class_Version(), "PhysicsObjects.h", 502,
                   typeid(::vhtm::TriggerObject), DefineBehavior(ptr, ptr),
                   &::vhtm::TriggerObject::Dictionary, isa_proxy, 4,
                   sizeof(::vhtm::TriggerObject) );
@@ -604,6 +604,70 @@ namespace ROOT {
    static void pairlEstringcOunsignedsPintgR_TClassManip(TClass* ){
    }
 
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_vhtmcLcLSelectedEvent(void *p = 0);
+   static void *newArray_vhtmcLcLSelectedEvent(Long_t size, void *p);
+   static void delete_vhtmcLcLSelectedEvent(void *p);
+   static void deleteArray_vhtmcLcLSelectedEvent(void *p);
+   static void destruct_vhtmcLcLSelectedEvent(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::vhtm::SelectedEvent*)
+   {
+      ::vhtm::SelectedEvent *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::SelectedEvent >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("vhtm::SelectedEvent", ::vhtm::SelectedEvent::Class_Version(), "PhysicsObjects.h", 610,
+                  typeid(::vhtm::SelectedEvent), DefineBehavior(ptr, ptr),
+                  &::vhtm::SelectedEvent::Dictionary, isa_proxy, 4,
+                  sizeof(::vhtm::SelectedEvent) );
+      instance.SetNew(&new_vhtmcLcLSelectedEvent);
+      instance.SetNewArray(&newArray_vhtmcLcLSelectedEvent);
+      instance.SetDelete(&delete_vhtmcLcLSelectedEvent);
+      instance.SetDeleteArray(&deleteArray_vhtmcLcLSelectedEvent);
+      instance.SetDestructor(&destruct_vhtmcLcLSelectedEvent);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::vhtm::SelectedEvent*)
+   {
+      return GenerateInitInstanceLocal((::vhtm::SelectedEvent*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::vhtm::SelectedEvent*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+} // end of namespace ROOT
+
+namespace ROOT {
+   static void *new_vhtmcLcLZtnP(void *p = 0);
+   static void *newArray_vhtmcLcLZtnP(Long_t size, void *p);
+   static void delete_vhtmcLcLZtnP(void *p);
+   static void deleteArray_vhtmcLcLZtnP(void *p);
+   static void destruct_vhtmcLcLZtnP(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const ::vhtm::ZtnP*)
+   {
+      ::vhtm::ZtnP *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::vhtm::ZtnP >(0);
+      static ::ROOT::TGenericClassInfo 
+         instance("vhtm::ZtnP", ::vhtm::ZtnP::Class_Version(), "PhysicsObjects.h", 633,
+                  typeid(::vhtm::ZtnP), DefineBehavior(ptr, ptr),
+                  &::vhtm::ZtnP::Dictionary, isa_proxy, 4,
+                  sizeof(::vhtm::ZtnP) );
+      instance.SetNew(&new_vhtmcLcLZtnP);
+      instance.SetNewArray(&newArray_vhtmcLcLZtnP);
+      instance.SetDelete(&delete_vhtmcLcLZtnP);
+      instance.SetDeleteArray(&deleteArray_vhtmcLcLZtnP);
+      instance.SetDestructor(&destruct_vhtmcLcLZtnP);
+      return &instance;
+   }
+   TGenericClassInfo *GenerateInitInstance(const ::vhtm::ZtnP*)
+   {
+      return GenerateInitInstanceLocal((::vhtm::ZtnP*)0);
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const ::vhtm::ZtnP*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 } // end of namespace ROOT
 
 namespace vhtm {
@@ -1157,6 +1221,80 @@ TClass *TriggerObject::Dictionary()
 TClass *TriggerObject::Class()
 {
    if (!fgIsA) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::vhtm::TriggerObject*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+} // namespace vhtm
+namespace vhtm {
+//______________________________________________________________________________
+atomic_TClass_ptr SelectedEvent::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *SelectedEvent::Class_Name()
+{
+   return "vhtm::SelectedEvent";
+}
+
+//______________________________________________________________________________
+const char *SelectedEvent::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::vhtm::SelectedEvent*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int SelectedEvent::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::vhtm::SelectedEvent*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *SelectedEvent::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::vhtm::SelectedEvent*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *SelectedEvent::Class()
+{
+   if (!fgIsA) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::vhtm::SelectedEvent*)0x0)->GetClass(); }
+   return fgIsA;
+}
+
+} // namespace vhtm
+namespace vhtm {
+//______________________________________________________________________________
+atomic_TClass_ptr ZtnP::fgIsA(0);  // static to hold class pointer
+
+//______________________________________________________________________________
+const char *ZtnP::Class_Name()
+{
+   return "vhtm::ZtnP";
+}
+
+//______________________________________________________________________________
+const char *ZtnP::ImplFileName()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::vhtm::ZtnP*)0x0)->GetImplFileName();
+}
+
+//______________________________________________________________________________
+int ZtnP::ImplFileLine()
+{
+   return ::ROOT::GenerateInitInstanceLocal((const ::vhtm::ZtnP*)0x0)->GetImplFileLine();
+}
+
+//______________________________________________________________________________
+TClass *ZtnP::Dictionary()
+{
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::vhtm::ZtnP*)0x0)->GetClass();
+   return fgIsA;
+}
+
+//______________________________________________________________________________
+TClass *ZtnP::Class()
+{
+   if (!fgIsA) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::vhtm::ZtnP*)0x0)->GetClass(); }
    return fgIsA;
 }
 
@@ -1727,6 +1865,139 @@ namespace ROOT {
       ((current_t*)p)->~current_t();
    }
 } // end of namespace ROOT for class pair<string,unsigned int>
+
+namespace vhtm {
+//______________________________________________________________________________
+void SelectedEvent::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class vhtm::SelectedEvent.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(vhtm::SelectedEvent::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(vhtm::SelectedEvent::Class(),this);
+   }
+}
+
+} // namespace vhtm
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vhtmcLcLSelectedEvent(void *p) {
+      return  p ? new(p) ::vhtm::SelectedEvent : new ::vhtm::SelectedEvent;
+   }
+   static void *newArray_vhtmcLcLSelectedEvent(Long_t nElements, void *p) {
+      return p ? new(p) ::vhtm::SelectedEvent[nElements] : new ::vhtm::SelectedEvent[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vhtmcLcLSelectedEvent(void *p) {
+      delete ((::vhtm::SelectedEvent*)p);
+   }
+   static void deleteArray_vhtmcLcLSelectedEvent(void *p) {
+      delete [] ((::vhtm::SelectedEvent*)p);
+   }
+   static void destruct_vhtmcLcLSelectedEvent(void *p) {
+      typedef ::vhtm::SelectedEvent current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::vhtm::SelectedEvent
+
+namespace vhtm {
+//______________________________________________________________________________
+void ZtnP::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class vhtm::ZtnP.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(vhtm::ZtnP::Class(),this);
+   } else {
+      R__b.WriteClassBuffer(vhtm::ZtnP::Class(),this);
+   }
+}
+
+} // namespace vhtm
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vhtmcLcLZtnP(void *p) {
+      return  p ? new(p) ::vhtm::ZtnP : new ::vhtm::ZtnP;
+   }
+   static void *newArray_vhtmcLcLZtnP(Long_t nElements, void *p) {
+      return p ? new(p) ::vhtm::ZtnP[nElements] : new ::vhtm::ZtnP[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vhtmcLcLZtnP(void *p) {
+      delete ((::vhtm::ZtnP*)p);
+   }
+   static void deleteArray_vhtmcLcLZtnP(void *p) {
+      delete [] ((::vhtm::ZtnP*)p);
+   }
+   static void destruct_vhtmcLcLZtnP(void *p) {
+      typedef ::vhtm::ZtnP current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class ::vhtm::ZtnP
+
+namespace ROOT {
+   static TClass *vectorlEvhtmcLcLZtnPgR_Dictionary();
+   static void vectorlEvhtmcLcLZtnPgR_TClassManip(TClass*);
+   static void *new_vectorlEvhtmcLcLZtnPgR(void *p = 0);
+   static void *newArray_vectorlEvhtmcLcLZtnPgR(Long_t size, void *p);
+   static void delete_vectorlEvhtmcLcLZtnPgR(void *p);
+   static void deleteArray_vectorlEvhtmcLcLZtnPgR(void *p);
+   static void destruct_vectorlEvhtmcLcLZtnPgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const vector<vhtm::ZtnP>*)
+   {
+      vector<vhtm::ZtnP> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<vhtm::ZtnP>));
+      static ::ROOT::TGenericClassInfo 
+         instance("vector<vhtm::ZtnP>", -2, "vector", 214,
+                  typeid(vector<vhtm::ZtnP>), DefineBehavior(ptr, ptr),
+                  &vectorlEvhtmcLcLZtnPgR_Dictionary, isa_proxy, 4,
+                  sizeof(vector<vhtm::ZtnP>) );
+      instance.SetNew(&new_vectorlEvhtmcLcLZtnPgR);
+      instance.SetNewArray(&newArray_vectorlEvhtmcLcLZtnPgR);
+      instance.SetDelete(&delete_vectorlEvhtmcLcLZtnPgR);
+      instance.SetDeleteArray(&deleteArray_vectorlEvhtmcLcLZtnPgR);
+      instance.SetDestructor(&destruct_vectorlEvhtmcLcLZtnPgR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<vhtm::ZtnP> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<vhtm::ZtnP>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *vectorlEvhtmcLcLZtnPgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<vhtm::ZtnP>*)0x0)->GetClass();
+      vectorlEvhtmcLcLZtnPgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void vectorlEvhtmcLcLZtnPgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vectorlEvhtmcLcLZtnPgR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<vhtm::ZtnP> : new vector<vhtm::ZtnP>;
+   }
+   static void *newArray_vectorlEvhtmcLcLZtnPgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) vector<vhtm::ZtnP>[nElements] : new vector<vhtm::ZtnP>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vectorlEvhtmcLcLZtnPgR(void *p) {
+      delete ((vector<vhtm::ZtnP>*)p);
+   }
+   static void deleteArray_vectorlEvhtmcLcLZtnPgR(void *p) {
+      delete [] ((vector<vhtm::ZtnP>*)p);
+   }
+   static void destruct_vectorlEvhtmcLcLZtnPgR(void *p) {
+      typedef vector<vhtm::ZtnP> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class vector<vhtm::ZtnP>
 
 namespace ROOT {
    static TClass *vectorlEvhtmcLcLVertexgR_Dictionary();
@@ -3052,6 +3323,69 @@ namespace ROOT {
 } // end of namespace ROOT for class map<string,float>
 
 namespace ROOT {
+   static TClass *maplEstringcOdoublegR_Dictionary();
+   static void maplEstringcOdoublegR_TClassManip(TClass*);
+   static void *new_maplEstringcOdoublegR(void *p = 0);
+   static void *newArray_maplEstringcOdoublegR(Long_t size, void *p);
+   static void delete_maplEstringcOdoublegR(void *p);
+   static void deleteArray_maplEstringcOdoublegR(void *p);
+   static void destruct_maplEstringcOdoublegR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const map<string,double>*)
+   {
+      map<string,double> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<string,double>));
+      static ::ROOT::TGenericClassInfo 
+         instance("map<string,double>", -2, "map", 96,
+                  typeid(map<string,double>), DefineBehavior(ptr, ptr),
+                  &maplEstringcOdoublegR_Dictionary, isa_proxy, 0,
+                  sizeof(map<string,double>) );
+      instance.SetNew(&new_maplEstringcOdoublegR);
+      instance.SetNewArray(&newArray_maplEstringcOdoublegR);
+      instance.SetDelete(&delete_maplEstringcOdoublegR);
+      instance.SetDeleteArray(&deleteArray_maplEstringcOdoublegR);
+      instance.SetDestructor(&destruct_maplEstringcOdoublegR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::MapInsert< map<string,double> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const map<string,double>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *maplEstringcOdoublegR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const map<string,double>*)0x0)->GetClass();
+      maplEstringcOdoublegR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void maplEstringcOdoublegR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_maplEstringcOdoublegR(void *p) {
+      return  p ? ::new((::ROOT::TOperatorNewHelper*)p) map<string,double> : new map<string,double>;
+   }
+   static void *newArray_maplEstringcOdoublegR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::TOperatorNewHelper*)p) map<string,double>[nElements] : new map<string,double>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_maplEstringcOdoublegR(void *p) {
+      delete ((map<string,double>*)p);
+   }
+   static void deleteArray_maplEstringcOdoublegR(void *p) {
+      delete [] ((map<string,double>*)p);
+   }
+   static void destruct_maplEstringcOdoublegR(void *p) {
+      typedef map<string,double> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class map<string,double>
+
+namespace ROOT {
    static TClass *maplEdoublecOvectorlEdoublegRsPgR_Dictionary();
    static void maplEdoublecOvectorlEdoublegRsPgR_TClassManip(TClass*);
    static void *new_maplEdoublecOvectorlEdoublegRsPgR(void *p = 0);
@@ -3122,10 +3456,9 @@ namespace {
     };
     static const char* includePaths[] = {
 "./interface",
-"/afs/cern.ch/work/s/sroychow/public/HZZ4l/Moriond/Offline/CMSSW_7_6_3/src/ZZMatrixElement/MEMCalculators/interface/",
 "./",
 "/cvmfs/cms.cern.ch/slc6_amd64_gcc493/lcg/root/6.02.12-kpegke4/include",
-"/afs/cern.ch/work/s/sroychow/public/HZZ4l/Moriond/Offline/HZZ4lAnalysis/",
+"/grid_mnt/public/sroychow/MassResolution/HZZ4lAnalysis/",
 0
     };
     static const char* fwdDeclCode = 
@@ -3155,6 +3488,8 @@ namespace vhtm{class __attribute__((annotate("$clingAutoload$interface/LinkDef.h
 namespace vhtm{class __attribute__((annotate("$clingAutoload$interface/LinkDef.h")))  TriggerObject;}
 namespace std{template <class _CharT> struct __attribute__((annotate("$clingAutoload$string")))  char_traits;
 }
+namespace vhtm{class __attribute__((annotate("$clingAutoload$interface/LinkDef.h")))  SelectedEvent;}
+namespace vhtm{class __attribute__((annotate("$clingAutoload$interface/LinkDef.h")))  ZtnP;}
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 
@@ -3180,9 +3515,11 @@ namespace std{template <class _CharT> struct __attribute__((annotate("$clingAuto
 "vhtm::Muon", payloadCode, "@",
 "vhtm::PackedPFCandidate", payloadCode, "@",
 "vhtm::Photon", payloadCode, "@",
+"vhtm::SelectedEvent", payloadCode, "@",
 "vhtm::Tau", payloadCode, "@",
 "vhtm::TriggerObject", payloadCode, "@",
 "vhtm::Vertex", payloadCode, "@",
+"vhtm::ZtnP", payloadCode, "@",
 nullptr};
 
     static bool isInitialized = false;
