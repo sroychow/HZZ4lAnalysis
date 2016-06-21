@@ -41,7 +41,7 @@ trigPathList HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
 trigPathList HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v
 trigPathList HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v
 #single file
-inputFile ../ZllmassResolution_1.root 
+inputFile root://se01.indiacms.res.in//store/user/sroychow/HZZ4lMiniAod/2016/MassResolution/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_DYJets/160617_092511/0000/ZllmassResolution_99.root 
 #list of input files
 #inputFileList Flist.txt
 useEventList 0
