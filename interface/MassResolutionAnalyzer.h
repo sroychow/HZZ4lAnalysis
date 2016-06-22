@@ -55,8 +55,10 @@ public:
   std::vector<ZCandidate> Z;
   std::vector<vhtm::Muon> tightMuVec_;
   std::vector<vhtm::Electron> tightEleVec_;
-  TTree* massRtree_;
+  TTree* massRtreeZmm_;
+  TTree* massRtreeZee_;
   mresVar mr;
+  mresVar er;
   TFile* tfout_;
   std::string treeFileName_;
 };

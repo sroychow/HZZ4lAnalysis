@@ -86,7 +86,8 @@ AnaBase::AnaBase()
     evFile_("default_event.out"),
     maxEvt_(0),
     firstEvt_(-1),
-    lastEvt_(-1)
+    lastEvt_(-1),
+    useCalibEle_(false)    
 {
   cout << setiosflags(ios::fixed); 
   cout << "=== Start of Analysis === " << endl;
@@ -242,7 +243,10 @@ void AnaBase::setAddresses()
   if (branchFound("Event")) chain_->SetBranchAddress("Event", &eventList_);
   if (branchFound("Vertex")) chain_->SetBranchAddress("Vertex", &vertexList_);
   if (branchFound("Tau"))  chain_->SetBranchAddress("Tau", &tauList_);
-  if (branchFound("Electron")) chain_->SetBranchAddress("Electron", &electronList_);
+  if(useCalibEle_) {
+    if (branchFound("ElectronCalibrated")) chain_->SetBranchAddress("ElectronCalibrated", &electronList_);
+  }
+  else if (branchFound("Electron")) chain_->SetBranchAddress("Electron", &electronList_);
   //if (branchFound("CalibratedElectron")) chain_->SetBranchAddress("CalibratedElectron", &electronList_);
   if (branchFound("Muon")) chain_->SetBranchAddress("Muon", &muonList_);
   if (branchFound("Photon")) chain_->SetBranchAddress("Photon", &photonList_);
@@ -386,6 +390,8 @@ bool AnaBase::readJob(const string& jobFile, int& nFiles)
       AnaUtil::buildMap(tokens, eventIdMap_);
     else if (key == "cloneEvents") 
       cloneEvents_ = (std::stoi(value.c_str()) > 0) ? true : false;
+    else if (key == "useCalibElectrons") 
+      useCalibEle_ = (std::stoi(value.c_str()) > 0) ? true : false;
     else
       AnaUtil::storeCuts(tokens, hmap);
     

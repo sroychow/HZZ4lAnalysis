@@ -257,7 +257,6 @@ private:
   int bunchCrossing_;
   int firstEvt_;
   int lastEvt_;
-
   std::map<std::string, double> vtxCutMap_;
   std::map<std::string, double> muonCutMap_;
   std::map<std::string, double> photonCutMap_;
@@ -267,7 +266,7 @@ private:
   std::map<std::string, double> bjetCutMap_;
   std::map<std::string, double> jetCutMap_;
   std::map<std::string, double> evselCutMap_;
-
   std::map<std::string, int> eventIdMap_;
+  bool useCalibEle_;
 };
 #endif

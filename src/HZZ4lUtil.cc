@@ -211,10 +211,11 @@ namespace HZZ4lUtil {
   	    jet.muonEnergyFraction < 0.8 && 
   	    centralCut);
   }
-  bool electronBDT(const vhtm::Electron& electron) {
+
+ bool electronBDT(const vhtm::Electron& electron) {
     double scEta = std::fabs(electron.scEta);
     double elePt = electron.pt;
-    double BDT = electron.BDT; //preComp;
+    double BDT = electron.BDTpreComp; //preComp;
     bool isBDT = (elePt <= 10 && ((scEta < 0.8                   && BDT > -0.265)   ||
                                   (scEta >= 0.8 && scEta < 1.479 && BDT > -0.556)   ||
                                   (scEta >= 1.479                && BDT > -0.551))) ||

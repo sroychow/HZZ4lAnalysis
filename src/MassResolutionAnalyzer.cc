@@ -66,24 +66,7 @@ MassResolutionAnalyzer::~MassResolutionAnalyzer()
 // -------------------------------------------------------
 bool MassResolutionAnalyzer::beginJob() 
 { 
-  //open the output tree
-  tfout_ = TFile::Open(treeFileName_.c_str(),"RECREATE");
-  tfout_->cd();
-  massRtree_ = new TTree("mRestree","mass resolution study tree");
-  massRtree_->Branch("massZ",&mr.m);
-  massRtree_->Branch("massZErr", &mr.merr);
-  massRtree_->Branch("eta1", &mr.eta1);
-  massRtree_->Branch("eta2",&mr.eta2);
-  massRtree_->Branch("pT1",&mr.pT1);
-  massRtree_->Branch("pT2",&mr.pT2);
-  massRtree_->Branch("weight",&mr.w);
 
-  PhysicsObjSelector::beginJob();
-  // Open the output ROOT file
-  histf()->cd();
-  PhysicsObjSelector::bookHistograms();
-  bookHistograms();
-  return true;
   mr.m = -1.;
   mr.merr = -1.;
   mr.eta1 = -1.;
@@ -91,6 +74,44 @@ bool MassResolutionAnalyzer::beginJob()
   mr.pT1 = -1.;
   mr.pT2 = -1.;
   mr.w = 1.;
+
+  er.m = -1.;
+  er.merr = -1.;
+  er.eta1 = -1.;
+  er.eta2 = -1.;
+  er.pT1 = -1.;
+  er.pT2 = -1.;
+  er.w = 1.;
+
+  //open the output tree
+  tfout_ = TFile::Open(treeFileName_.c_str(),"RECREATE");
+  tfout_->cd();
+  massRtreeZmm_ = new TTree("mRestreeZmm","mass resolution study tree(Zmm)");
+  massRtreeZmm_->Branch("massZ",&mr.m);
+  massRtreeZmm_->Branch("massZErr", &mr.merr);
+  massRtreeZmm_->Branch("eta1", &mr.eta1);
+  massRtreeZmm_->Branch("eta2",&mr.eta2);
+  massRtreeZmm_->Branch("pT1",&mr.pT1);
+  massRtreeZmm_->Branch("pT2",&mr.pT2);
+  massRtreeZmm_->Branch("weight",&mr.w);
+  //tfout_->cd();
+  massRtreeZee_ = new TTree("mRestreeZee","mass resolution study tree(Zee)");
+  massRtreeZee_->Branch("massZ",&er.m);
+  massRtreeZee_->Branch("massZErr", &er.merr);
+  massRtreeZee_->Branch("eta1", &er.eta1);
+  massRtreeZee_->Branch("eta2",&er.eta2);
+  massRtreeZee_->Branch("pT1",&er.pT1);
+  massRtreeZee_->Branch("pT2",&er.pT2);
+  massRtreeZee_->Branch("weight",&er.w);
+
+
+  PhysicsObjSelector::beginJob();
+  // Open the output ROOT file
+  histf()->cd();
+  PhysicsObjSelector::bookHistograms();
+  bookHistograms();
+  return true;
+
 }
 // ---------------
 // Book Common histograms
@@ -202,11 +223,14 @@ void MassResolutionAnalyzer::eventLoop()
     // access selected objects (Tight, isolated leptons)
     //const auto& elePhotonPairVec = getTightIsoElePhotonPairList();
     tightMuVec_ = getTightIsoMuList();
+    tightEleVec_ = getTightIsoEleList();
     histf()->cd("MassResolution");
     AnaUtil::fillHist1D("nMu", tightMuVec_.size(), puevWt_);
-    if(tightMuVec_.size() < 2)                      continue;
+    AnaUtil::fillHist1D("nEle", tightEleVec_.size(), puevWt_);
+    if(tightMuVec_.size() < 2 && tightEleVec_.size() < 2)                      continue;
     AnaUtil::fillHist1D("evtCutFlow", 3, puevWt_);
     getZmmMassInfo();
+    getZeeMassInfo();
   }
   // Analysis is over
   endJob();
@@ -236,7 +260,38 @@ void MassResolutionAnalyzer::getZmmMassInfo() {
       mr.eta2 = jp.phi;
       mr.pT1 = ip.smearedKpt;
       mr.pT2 = jp.smearedKpt;
-      massRtree_->Fill();
+      massRtreeZmm_->Fill();
+    }
+  } 
+}
+
+//from tight iso muons for Z
+void MassResolutionAnalyzer::getZeeMassInfo() {
+  for (unsigned int i = 0; i < tightEleVec_.size(); ++i) {
+    const auto& ip = tightEleVec_[i];
+    TLorentzVector lep1P4, lep1P4_p; 
+    lep1P4.SetPtEtaPhiE(ip.pt,ip.eta,ip.phi,ip.energy);
+    lep1P4_p.SetPtEtaPhiE(ip.pt + ip.pterr,ip.eta,ip.phi,ip.energy);
+    for (unsigned int j = i+1; j < tightEleVec_.size(); ++j) {
+      const auto& jp = tightEleVec_[j];
+      //
+      // opposite charge
+      if ((ip.charge + jp.charge) != 0) continue;
+      //std::cout << "ZEE found !! Ip charge=" << ip.charge << "\tJp charge=" << jp.charge << std::endl;
+      TLorentzVector lep2P4, lep2P4_p;
+      lep2P4.SetPtEtaPhiE(jp.pt,jp.eta,jp.phi,jp.energy);
+      lep2P4_p.SetPtEtaPhiE(jp.pt + jp.pterr,jp.eta,jp.phi,jp.energy);
+      double moriginal = (lep1P4 + lep2P4).M();
+      double dm1 = (lep1P4_p + lep2P4).M() - moriginal;
+      double dm2 = (lep1P4 + lep2P4_p).M() - moriginal;
+      double delm = TMath::Sqrt(TMath::Power(dm1,2) + TMath::Power(dm2,2));
+      er.m = moriginal;
+      er.merr = delm;
+      er.eta1 = ip.eta;
+      er.eta2 = jp.phi;
+      er.pT1 = ip.pt;
+      er.pT2 = jp.pt;
+      massRtreeZee_->Fill();
     }
   } 
 }
@@ -283,11 +338,12 @@ void MassResolutionAnalyzer::endJob() {
   histf()->cd();
   histf()->Write();
   histf()->Close();
-  std::cout << "Mtree" << massRtree_ << std::endl;
+  std::cout << "Mtree Zmm////Zee" << massRtreeZmm_ << "////" << massRtreeZee_ <<std::endl;
   std::cout << "tfout" << tfout_ << std::endl;
-  //massRtree_->AutoSave();
-  tfout_->Write();
+  massRtreeZmm_->AutoSave();
+  massRtreeZee_->AutoSave();
+  //tfout_->Write();
   tfout_->Close();
   delete histf();
-  //delete massRtree_; 
+  //delete massRtreeZmm_; 
 }
