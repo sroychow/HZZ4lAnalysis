@@ -46,4 +46,7 @@
 #pragma link C++ class std::pair<std::string,unsigned int>+;
 #pragma link C++ class std::map<double,std::vector<double> >+;
 #pragma link C++ class std::map<std::string,std::vector<double> >+;
+#pragma link C++ class vhtm::SelectedEvent+;
+#pragma link C++ class vhtm::ZtnP+;
+#pragma link C++ class std::vector<vhtm::ZtnP>+;
 #endif

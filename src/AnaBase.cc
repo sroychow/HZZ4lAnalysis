@@ -1050,15 +1050,18 @@ double AnaBase::matchTriggerObject(const vector<TriggerObject>& trigObjList,
   double obj_pt = obj.Pt();
   int indx = 0;
   for (auto it = trigObjList.begin(); it != trigObjList.end(); ++it,++indx) {
-    if (indx == trig_skip) continue;
+    //if (indx == trig_skip) continue;
     const TriggerObject& trigObj = (*it);
     const map<string, uint>& path_list = trigObj.pathList;
     bool matched = false;
     for (auto istr = path_list.begin(); istr != path_list.end(); ++istr) {
       string path = istr->first;
-      int flag = istr->second;
-      if (path.find(trigPath) != string::npos && flag == 1) {
+      //Temporary fix since prescales wrong in 80X for now
+      //int flag = istr->second;
+      //if (path.find(trigPath) != string::npos && flag == 1) {
+      if (path.find(trigPath) != string::npos) {
         matched = true;
+        std::cout << "Matched Path=" << path << std::endl;
         break;
       }
     }
