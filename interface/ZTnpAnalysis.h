@@ -48,10 +48,12 @@ public:
   std::vector<std::pair<vhtm::Muon, std::vector<vhtm::PackedPFCandidate> > >   tightMuon_;
   std::vector<vhtm::PackedPFCandidate>  fsrPVec_;
   std::vector<vhtm::TriggerObject> tObj_;
+  std::vector<vhtm::GenParticle> genObj_;
   std::string treeFname_;
   unsigned long int run;
   unsigned long int lumi;
   unsigned long int event;
+  int isData;
   
   TTree* outTree_;
   TFile* outTreeFile_;
@@ -89,7 +91,13 @@ public:
    float         TnP_l1_mvaIdSpring15[kMaxTnP];   
    float         TnP_l1_relIsoAfterFSR[kMaxTnP];   
    float         TnP_l1_chargedHadIso03[kMaxTnP];   
-   int           TnP_l1_hasOwnFSR[kMaxTnP];   
+   int           TnP_l1_hasOwnFSR[kMaxTnP]; 
+
+   int           TnP_l1_mcMatchId[kMaxTnP];   //[nTnP]
+   int           TnP_l1_mcMatchAny[kMaxTnP];   //[nTnP]
+   float         TnP_l1_mcPt[kMaxTnP];   //[nTnP]
+   float         TnP_l1_mcPt1[kMaxTnP]; 
+ 
    int           TnP_l1_hlt1L[kMaxTnP];   
    float         TnP_l1_p4WithFSR_pt[kMaxTnP];   
    float         TnP_l1_p4WithFSR_eta[kMaxTnP];   
@@ -120,7 +128,13 @@ public:
    float         TnP_l2_mvaIdSpring15[kMaxTnP];   
    float         TnP_l2_relIsoAfterFSR[kMaxTnP];   
    float         TnP_l2_chargedHadIso03[kMaxTnP];   
-   int           TnP_l2_hasOwnFSR[kMaxTnP];   
+   int           TnP_l2_hasOwnFSR[kMaxTnP];
+
+   int           TnP_l2_mcMatchId[kMaxTnP];   //[nTnP]
+   int           TnP_l2_mcMatchAny[kMaxTnP];   //[nTnP]
+   float         TnP_l2_mcPt[kMaxTnP];   //[nTnP]
+   float         TnP_l2_mcPt1[kMaxTnP];   
+
    int           TnP_l2_hlt1L[kMaxTnP];   
    float         TnP_l2_p4WithFSR_pt[kMaxTnP];   
    float         TnP_l2_p4WithFSR_eta[kMaxTnP];   

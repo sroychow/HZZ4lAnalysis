@@ -130,6 +130,7 @@ public:
   bool eleId(const vhtm::Electron& ele, int bx);
   bool DYtoeeVeto(TLorentzVector TOS, TLorentzVector TSS, double tauOSemfrac, vhtm::Electron ele, int elIndx);
   int GenLevelMatching(const TLorentzVector& DetObj, const std::vector<vhtm::GenParticle>& genList);
+  int GenLevelMatching(const TLorentzVector& DetObj, const std::vector<vhtm::GenParticle>& genList, TLorentzVector& matchedGenP4, int& mid);
   void isGenMatchedDy(int leptonId, std::vector<vhtm::GenParticle>&, bool&);
 
   const std::vector<vhtm::Event>* eventColl() const {return eventList_;}

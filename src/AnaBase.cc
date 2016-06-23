@@ -25,6 +25,7 @@
 #include "TProfile.h"
 
 #include "AnaUtil.h"
+#include "HZZ4lUtil.h"
 #include "AnaBase.h"
 
 using std::cout;
@@ -1272,6 +1273,32 @@ int AnaBase::GenLevelMatching( const TLorentzVector& DetObj, const std::vector<v
       id = std::abs(gp.pdgId);
     }
   }
+  return ((drmin < 0.1) ? id : -1);
+}
+
+int AnaBase::GenLevelMatching(const TLorentzVector& DetObj, const std::vector<vhtm::GenParticle>& genList, TLorentzVector& matchedGenP4, int& mid) {
+  if (!genList.size())
+    return -1;
+  int id = -1;
+  double drmin = 999;
+  unsigned int matchedGenidx = -1;
+  for (unsigned int i=0; i < genList.size(); ++i ) {
+    const GenParticle& gp = genList.at(i);
+    TLorentzVector GenObj;
+    GenObj.SetPtEtaPhiE(gp.pt, gp.eta, gp.phi, gp.energy);
+    double dr = GenObj.DeltaR(DetObj);
+    if (dr < drmin) {
+      drmin = dr;
+      id = std::abs(gp.pdgId);
+      matchedGenidx = i;
+    }
+  }
+  if((drmin < 0.1)) {
+    const auto& matchedgp = genList.at(matchedGenidx);
+    matchedGenP4 = HZZ4lUtil::getP4(matchedgp);
+    getMotherId(matchedgp, mid);
+    //std::cout << "MID = " << mid << std::endl;   
+  }  
   return ((drmin < 0.1) ? id : -1);
 }
 
