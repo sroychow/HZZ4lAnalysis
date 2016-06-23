@@ -269,11 +269,17 @@ void ZTnpAnalysis::eventLoop()
 }
 void ZTnpAnalysis::getZtnPpair() {
   for (unsigned int i = 0; i < tightMuon_.size(); ++i) {
-    const auto& ip = tightMuon_[i].first;
-    TLorentzVector tagP4 = HZZ4lUtil::getP4(ip);
+    const auto& tagmu = tightMuon_[i].first;
+    TLorentzVector tagP4 = HZZ4lUtil::getP4(tagmu);
+    TLorentzVector tagP4wfsr = tagP4;
+    bool taghasfsr = false;
+    if(!tightMuon_[i].second.empty()) { 
+      tagP4wfsr += HZZ4lUtil::getP4(tightMuon_[i].second.at(0));
+      taghasfsr = true;
+    }
     if(tagP4.Pt() <= 20.)    continue;  
-    double iso = HZZ4lUtil::computeMuonReliso(ip, fsrPVec_, 0.01, 0.3);   
-    if (iso >= 0.35) continue; // it is already scaled by pT
+    double tagiso = HZZ4lUtil::computeMuonReliso(tagmu, fsrPVec_, 0.01, 0.3);   
+    if (tagiso >= 0.35) continue; // it is already scaled by pT
     int matchedidx;
     bool trigMatched = matchTriggerObject(tObj_, tagP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
     || matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
@@ -282,18 +288,95 @@ void ZTnpAnalysis::getZtnPpair() {
     if (!trigMatched) continue; // it is already scaled by pT
 
     for (unsigned int j = i+1; j < tightMuon_.size(); ++j) {
-      const auto& jp = tightMuon_[j].first;
+      const auto& probemu = tightMuon_[j].first;
       // opposite charge
-      if ((ip.charge + jp.charge) != 0) continue; 
+      if ((tagmu.charge + probemu.charge) != 0) continue; 
       //std::cout << "Tag & Probe pair found!!" << std::endl;
-      TLorentzVector probeP4 = HZZ4lUtil::getP4(jp);
+      TLorentzVector probeP4 = HZZ4lUtil::getP4(probemu); 
+      TLorentzVector probeP4wfsr = probeP4;
+      bool probehasfsr = false;
+      if(!tightMuon_[j].second.empty()) {
+        probeP4wfsr += HZZ4lUtil::getP4(tightMuon_[j].second.at(0));
+        probehasfsr = true;
+      }
+      double probeiso = HZZ4lUtil::computeMuonReliso(probemu, fsrPVec_, 0.01, 0.3); 
+      //compute TnP pair P4
       TLorentzVector tnpP4 = tagP4 + probeP4;
+      TLorentzVector tnpP4wfsr = tagP4wfsr + probeP4wfsr;
+      //Fill TnP pair property
       zcand.flavour = HZZ4lUtil::ZType::mumu;
       zcand.TnP_eta = tnpP4.Eta();   
       zcand.TnP_phi = tnpP4.Phi();   
-      //zcand.TnP_mass = tnpP4wfsr.M();   //with fsr?
-      //zcand.TnP_hasFSR = taghasfsr || probehasfsr;   
+      zcand.TnP_mass = tnpP4wfsr.M();   //with fsr
+      zcand.TnP_hasFSR = taghasfsr || probehasfsr;   
       zcand.TnP_mll = tnpP4.M();   //without fsr
+      //tag property
+      zcand.TnP_l1_pdgId = (tagmu.charge > 0) ? 13 : -13;   
+      zcand.TnP_l1_pt = tagP4.Pt();   
+      zcand.TnP_l1_eta = tagP4.Eta();   
+      zcand.TnP_l1_phi = tagP4.Phi();   
+      zcand.TnP_l1_mass = tagP4.M();   
+      zcand.TnP_l1_charge = tagmu.charge;   
+      zcand.TnP_l1_tightId = 1;   
+      zcand.TnP_l1_looseId = 1;   
+      zcand.TnP_l1_dxy = tagmu.dxyPV;   
+      zcand.TnP_l1_dz  = tagmu.dzPV;   
+      zcand.TnP_l1_edxy = -1;   //not saved in our tree 
+      zcand.TnP_l1_edz = -1;//not saved in out tree
+      zcand.TnP_l1_ip3d = tagmu.dB3D;   //check
+      zcand. TnP_l1_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
+      zcand.TnP_l1_ptErr = -1;//NS   
+      zcand.TnP_l1_lostHits = 0;//NS   
+      zcand.TnP_l1_trackerLayers = tagmu.trkHits;   
+      zcand.TnP_l1_pixelLayers = tagmu.pixHits;   
+      //zcand.TnP_l1_etaSc = -1;   
+      //zcand.TnP_l1_isGap = -1;   
+      //zcand.TnP_l1_r9 = -1;   
+      //zcand.TnP_l1_convVeto = -1;   
+      //zcand.TnP_l1_mvaIdSpring15 = -1;;   
+      zcand.TnP_l1_relIsoAfterFSR = tagiso;   
+      zcand.TnP_l1_chargedHadIso03 = tagmu.pfChargedHadIsoR03;   
+      zcand.TnP_l1_hasOwnFSR  = 1; //doubt
+      zcand.TnP_l1_hlt1L = 1; //doubt  
+      zcand.TnP_l1_p4WithFSR_pt = tagP4wfsr.Pt();   
+      zcand.TnP_l1_p4WithFSR_eta = tagP4wfsr.Eta();   
+      zcand.TnP_l1_p4WithFSR_phi = tagP4wfsr.Phi();   
+      zcand.TnP_l1_p4WithFSR_mass = tagP4wfsr.M();   
+      //probe property
+      zcand.TnP_l2_pdgId = (probemu.charge > 0) ? 13 : -13;   
+      zcand.TnP_l2_pt = probeP4.Pt();   
+      zcand.TnP_l2_eta = probeP4.Eta();   
+      zcand.TnP_l2_phi = probeP4.Phi();   
+      zcand.TnP_l2_mass = probeP4.M();   
+      zcand.TnP_l2_charge = probemu.charge;   
+      zcand.TnP_l2_tightId = 1;   
+      zcand.TnP_l2_looseId = 1;   
+      zcand.TnP_l2_dxy = probemu.dxyPV;   
+      zcand.TnP_l2_dz  = probemu.dzPV;   
+      zcand.TnP_l2_edxy = -1;   //correct? 
+      zcand.TnP_l2_edz = -1;
+      zcand.TnP_l2_ip3d = tagmu.dB3D;   //check
+      zcand. TnP_l2_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
+      zcand.TnP_l2_ptErr = -1;   
+      zcand.TnP_l2_lostHits = 0;   
+      zcand.TnP_l2_trackerLayers = probemu.trkHits;   
+      zcand.TnP_l2_pixelLayers = probemu.pixHits;   
+      //zcand.TnP_l2_etaSc = -1;   
+      //zcand.TnP_l2_isGap = -1;   
+      //zcand.TnP_l2_r9 = -1;   
+      //zcand.TnP_l2_convVeto = -1;   
+      //zcand.TnP_l2_mvaIdSpring15 = -1;;   
+      zcand.TnP_l2_relIsoAfterFSR = probeiso;   
+      zcand.TnP_l2_chargedHadIso03 = probemu.pfChargedHadIsoR03;   
+      zcand.TnP_l2_hasOwnFSR  = 1; //doubt
+      zcand.TnP_l2_hlt1L = matchTriggerObject(tObj_, probeP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
+                           || matchTriggerObject(tObj_, probeP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
+                           || matchTriggerObject(tObj_, probeP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02
+                           || matchTriggerObject(tObj_, probeP4, "HLT_IsoTkMu22_v", 0, 30,matchedidx) < 0.02; 
+      zcand.TnP_l2_p4WithFSR_pt = probeP4wfsr.Pt();   
+      zcand.TnP_l2_p4WithFSR_eta = probeP4wfsr.Eta();   
+      zcand.TnP_l2_p4WithFSR_phi = probeP4wfsr.Phi();   
+      zcand.TnP_l2_p4WithFSR_mass = probeP4wfsr.M();  
       outTree_->Fill();
     }
   }
