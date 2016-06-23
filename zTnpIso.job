@@ -1,6 +1,6 @@
 START
 dataType mc
-readTrigObject 0
+readTrigObject 1
 puHistFile /afs/cern.ch/work/a/amodak/public/CSA14/CMSSW_7_0_7_patch1/src/15Sept2014/reweightFunctionFall12.root
 histFile  test_EvntSel_newfsrsync.root
 logFile   test_EvntSel_sync.out
@@ -10,7 +10,7 @@ cloneFile selectedEvents_newfsrsync.root
 outputTreeFilename zTnPIso.root
 cloneEvents 0
 logOption 0
-maxEvent 50
+maxEvent -1
 #not that it matters but 
 bunchX 25
 vtxCutList ndf=4 z=24 Rho=2

@@ -65,74 +65,75 @@ ZTnpAnalysis::~ZTnpAnalysis()
 bool ZTnpAnalysis::beginJob() 
 {
   outTreeFile_ = TFile::Open(treeFname_.c_str(),"recreate");
+  outTreeFile_->cd();
   outTree_ = new TTree("tree","muTnP tree for iso");
-  outTree_->Branch("TnP_eta",zcand.TnP_eta);
-  outTree_->Branch("TnP_phi",zcand.TnP_phi);
-  outTree_->Branch("TnP_mass",zcand.TnP_mass);
-  outTree_->Branch("TnP_hasFSR",zcand.TnP_hasFSR);
-  outTree_->Branch("TnP_mll",zcand.TnP_mll);
-  outTree_->Branch("TnP_l1_pdgId",zcand.TnP_l1_pdgId);
-  outTree_->Branch("TnP_l1_pt",zcand.TnP_l1_pt);
-  outTree_->Branch("TnP_l1_eta",zcand.TnP_l1_eta);
-  outTree_->Branch("TnP_l1_phi",zcand.TnP_l1_phi);
-  outTree_->Branch("TnP_l1_mass",zcand.TnP_l1_mass);
-  outTree_->Branch("TnP_l1_charge",zcand.TnP_l1_charge);
-  outTree_->Branch("TnP_l1_tightId",zcand.TnP_l1_tightId);
-  outTree_->Branch("TnP_l1_looseId",zcand.TnP_l1_looseId);
-  outTree_->Branch("TnP_l1_dxy",zcand.TnP_l1_dxy);
-  outTree_->Branch("TnP_l1_dz",zcand.TnP_l1_dz);
-  outTree_->Branch("TnP_l1_edxy",zcand.TnP_l1_edxy);
-  outTree_->Branch("TnP_l1_edz",zcand.TnP_l1_edz);
-  outTree_->Branch("TnP_l1_ip3d",zcand.TnP_l1_ip3d);
-  outTree_->Branch("TnP_l1_sip3d",zcand.TnP_l1_sip3d);
-  outTree_->Branch("TnP_l1_ptErr",zcand.TnP_l1_ptErr);
-  outTree_->Branch("TnP_l1_lostHits",zcand.TnP_l1_lostHits);
-  outTree_->Branch("TnP_l1_trackerLayers",zcand.TnP_l1_trackerLayers);
-  outTree_->Branch("TnP_l1_pixelLayers",zcand.TnP_l1_pixelLayers);
-  outTree_->Branch("TnP_l1_etaSc",zcand.TnP_l1_etaSc);
-  outTree_->Branch("TnP_l1_isGap",zcand.TnP_l1_isGap);
-  outTree_->Branch("TnP_l1_r9",zcand.TnP_l1_r9);
-  outTree_->Branch("TnP_l1_convVeto",zcand.TnP_l1_convVeto);
-  outTree_->Branch("TnP_l1_mvaIdSpring15",zcand.TnP_l1_mvaIdSpring15);
-  outTree_->Branch("TnP_l1_relIsoAfterFSR",zcand.TnP_l1_relIsoAfterFSR);
-  outTree_->Branch("TnP_l1_chargedHadIso03",zcand.TnP_l1_chargedHadIso03);
-  outTree_->Branch("TnP_l1_hasOwnFSR",zcand.TnP_l1_hasOwnFSR);
-  outTree_->Branch("TnP_l1_hlt1L",zcand.TnP_l1_hlt1L);
-  outTree_->Branch("TnP_l1_p4WithFSR_pt",zcand.TnP_l1_p4WithFSR_pt);
-  outTree_->Branch("TnP_l1_p4WithFSR_eta",zcand.TnP_l1_p4WithFSR_eta);
-  outTree_->Branch("TnP_l1_p4WithFSR_phi",zcand.TnP_l1_p4WithFSR_phi);
-  outTree_->Branch("TnP_l1_p4WithFSR_mass",zcand.TnP_l1_p4WithFSR_mass);
-  outTree_->Branch("TnP_l2_pdgId",zcand.TnP_l2_pdgId);
-  outTree_->Branch("TnP_l2_pt",zcand.TnP_l2_pt);
-  outTree_->Branch("TnP_l2_eta",zcand.TnP_l2_eta);
-  outTree_->Branch("TnP_l2_phi",zcand.TnP_l2_phi);
-  outTree_->Branch("TnP_l2_mass",zcand.TnP_l2_mass);
-  outTree_->Branch("TnP_l2_charge",zcand.TnP_l2_charge);
-  outTree_->Branch("TnP_l2_tightId",zcand.TnP_l2_tightId);
-  outTree_->Branch("TnP_l2_looseId",zcand.TnP_l2_looseId);
-  outTree_->Branch("TnP_l2_dxy",zcand.TnP_l2_dxy);
-  outTree_->Branch("TnP_l2_dz",zcand.TnP_l2_dz);
-  outTree_->Branch("TnP_l2_edxy",zcand.TnP_l2_edxy);
-  outTree_->Branch("TnP_l2_edz",zcand.TnP_l2_edz);
-  outTree_->Branch("TnP_l2_ip3d",zcand.TnP_l2_ip3d);
-  outTree_->Branch("TnP_l2_sip3d",zcand.TnP_l2_sip3d);
-  outTree_->Branch("TnP_l2_ptErr",zcand.TnP_l2_ptErr);
-  outTree_->Branch("TnP_l2_lostHits",zcand.TnP_l2_lostHits);
-  outTree_->Branch("TnP_l2_trackerLayers",zcand.TnP_l2_trackerLayers);
-  outTree_->Branch("TnP_l2_pixelLayers",zcand.TnP_l2_pixelLayers);
-  outTree_->Branch("TnP_l2_etaSc",zcand.TnP_l2_etaSc);
-  outTree_->Branch("TnP_l2_isGap",zcand.TnP_l2_isGap);
-  outTree_->Branch("TnP_l2_r9",zcand.TnP_l2_r9);
-  outTree_->Branch("TnP_l2_convVeto",zcand.TnP_l2_convVeto);
-  outTree_->Branch("TnP_l2_mvaIdSpring15",zcand.TnP_l2_mvaIdSpring15);
-  outTree_->Branch("TnP_l2_relIsoAfterFSR",zcand.TnP_l2_relIsoAfterFSR);
-  outTree_->Branch("TnP_l2_chargedHadIso03",zcand.TnP_l2_chargedHadIso03);
-  outTree_->Branch("TnP_l2_hasOwnFSR",zcand.TnP_l2_hasOwnFSR);
-  outTree_->Branch("TnP_l2_hlt1L",zcand.TnP_l2_hlt1L);
-  outTree_->Branch("TnP_l2_p4WithFSR_pt",zcand.TnP_l2_p4WithFSR_pt);
-  outTree_->Branch("TnP_l2_p4WithFSR_eta",zcand.TnP_l2_p4WithFSR_eta);
-  outTree_->Branch("TnP_l2_p4WithFSR_phi",zcand.TnP_l2_p4WithFSR_phi);
-  outTree_->Branch("TnP_l2_p4WithFSR_mass",zcand.TnP_l2_p4WithFSR_mass);
+  outTree_->Branch("TnP_eta",&zcand.TnP_eta);
+  outTree_->Branch("TnP_phi",&zcand.TnP_phi);
+  outTree_->Branch("TnP_mass",&zcand.TnP_mass);
+  outTree_->Branch("TnP_hasFSR",&zcand.TnP_hasFSR);
+  outTree_->Branch("TnP_mll",&zcand.TnP_mll);
+  outTree_->Branch("TnP_l1_pdgId",&zcand.TnP_l1_pdgId);
+  outTree_->Branch("TnP_l1_pt",&zcand.TnP_l1_pt);
+  outTree_->Branch("TnP_l1_eta",&zcand.TnP_l1_eta);
+  outTree_->Branch("TnP_l1_phi",&zcand.TnP_l1_phi);
+  outTree_->Branch("TnP_l1_mass",&zcand.TnP_l1_mass);
+  outTree_->Branch("TnP_l1_charge",&zcand.TnP_l1_charge);
+  outTree_->Branch("TnP_l1_tightId",&zcand.TnP_l1_tightId);
+  outTree_->Branch("TnP_l1_looseId",&zcand.TnP_l1_looseId);
+  outTree_->Branch("TnP_l1_dxy",&zcand.TnP_l1_dxy);
+  outTree_->Branch("TnP_l1_dz",&zcand.TnP_l1_dz);
+  outTree_->Branch("TnP_l1_edxy",&zcand.TnP_l1_edxy);
+  outTree_->Branch("TnP_l1_edz",&zcand.TnP_l1_edz);
+  outTree_->Branch("TnP_l1_ip3d",&zcand.TnP_l1_ip3d);
+  outTree_->Branch("TnP_l1_sip3d",&zcand.TnP_l1_sip3d);
+  outTree_->Branch("TnP_l1_ptErr",&zcand.TnP_l1_ptErr);
+  outTree_->Branch("TnP_l1_lostHits",&zcand.TnP_l1_lostHits);
+  outTree_->Branch("TnP_l1_trackerLayers",&zcand.TnP_l1_trackerLayers);
+  outTree_->Branch("TnP_l1_pixelLayers",&zcand.TnP_l1_pixelLayers);
+  outTree_->Branch("TnP_l1_etaSc",&zcand.TnP_l1_etaSc);
+  outTree_->Branch("TnP_l1_isGap",&zcand.TnP_l1_isGap);
+  outTree_->Branch("TnP_l1_r9",&zcand.TnP_l1_r9);
+  outTree_->Branch("TnP_l1_convVeto",&zcand.TnP_l1_convVeto);
+  outTree_->Branch("TnP_l1_mvaIdSpring15",&zcand.TnP_l1_mvaIdSpring15);
+  outTree_->Branch("TnP_l1_relIsoAfterFSR",&zcand.TnP_l1_relIsoAfterFSR);
+  outTree_->Branch("TnP_l1_chargedHadIso03",&zcand.TnP_l1_chargedHadIso03);
+  outTree_->Branch("TnP_l1_hasOwnFSR",&zcand.TnP_l1_hasOwnFSR);
+  outTree_->Branch("TnP_l1_hlt1L",&zcand.TnP_l1_hlt1L);
+  outTree_->Branch("TnP_l1_p4WithFSR_pt",&zcand.TnP_l1_p4WithFSR_pt);
+  outTree_->Branch("TnP_l1_p4WithFSR_eta",&zcand.TnP_l1_p4WithFSR_eta);
+  outTree_->Branch("TnP_l1_p4WithFSR_phi",&zcand.TnP_l1_p4WithFSR_phi);
+  outTree_->Branch("TnP_l1_p4WithFSR_mass",&zcand.TnP_l1_p4WithFSR_mass);
+  outTree_->Branch("TnP_l2_pdgId",&zcand.TnP_l2_pdgId);
+  outTree_->Branch("TnP_l2_pt",&zcand.TnP_l2_pt);
+  outTree_->Branch("TnP_l2_eta",&zcand.TnP_l2_eta);
+  outTree_->Branch("TnP_l2_phi",&zcand.TnP_l2_phi);
+  outTree_->Branch("TnP_l2_mass",&zcand.TnP_l2_mass);
+  outTree_->Branch("TnP_l2_charge",&zcand.TnP_l2_charge);
+  outTree_->Branch("TnP_l2_tightId",&zcand.TnP_l2_tightId);
+  outTree_->Branch("TnP_l2_looseId",&zcand.TnP_l2_looseId);
+  outTree_->Branch("TnP_l2_dxy",&zcand.TnP_l2_dxy);
+  outTree_->Branch("TnP_l2_dz",&zcand.TnP_l2_dz);
+  outTree_->Branch("TnP_l2_edxy",&zcand.TnP_l2_edxy);
+  outTree_->Branch("TnP_l2_edz",&zcand.TnP_l2_edz);
+  outTree_->Branch("TnP_l2_ip3d",&zcand.TnP_l2_ip3d);
+  outTree_->Branch("TnP_l2_sip3d",&zcand.TnP_l2_sip3d);
+  outTree_->Branch("TnP_l2_ptErr",&zcand.TnP_l2_ptErr);
+  outTree_->Branch("TnP_l2_lostHits",&zcand.TnP_l2_lostHits);
+  outTree_->Branch("TnP_l2_trackerLayers",&zcand.TnP_l2_trackerLayers);
+  outTree_->Branch("TnP_l2_pixelLayers",&zcand.TnP_l2_pixelLayers);
+  outTree_->Branch("TnP_l2_etaSc",&zcand.TnP_l2_etaSc);
+  outTree_->Branch("TnP_l2_isGap",&zcand.TnP_l2_isGap);
+  outTree_->Branch("TnP_l2_r9",&zcand.TnP_l2_r9);
+  outTree_->Branch("TnP_l2_convVeto",&zcand.TnP_l2_convVeto);
+  outTree_->Branch("TnP_l2_mvaIdSpring15",&zcand.TnP_l2_mvaIdSpring15);
+  outTree_->Branch("TnP_l2_relIsoAfterFSR",&zcand.TnP_l2_relIsoAfterFSR);
+  outTree_->Branch("TnP_l2_chargedHadIso03",&zcand.TnP_l2_chargedHadIso03);
+  outTree_->Branch("TnP_l2_hasOwnFSR",&zcand.TnP_l2_hasOwnFSR);
+  outTree_->Branch("TnP_l2_hlt1L",&zcand.TnP_l2_hlt1L);
+  outTree_->Branch("TnP_l2_p4WithFSR_pt",&zcand.TnP_l2_p4WithFSR_pt);
+  outTree_->Branch("TnP_l2_p4WithFSR_eta",&zcand.TnP_l2_p4WithFSR_eta);
+  outTree_->Branch("TnP_l2_p4WithFSR_phi",&zcand.TnP_l2_p4WithFSR_phi);
+  outTree_->Branch("TnP_l2_p4WithFSR_mass",&zcand.TnP_l2_p4WithFSR_mass);
   
   
   // Open the output ROOT file (in AnaBase)
@@ -259,7 +260,7 @@ void ZTnpAnalysis::eventLoop()
     if(tightMuon_.size() < 2)         continue;
     AnaUtil::fillHist1D("evtCutFlow", 4, puevWt_);   
     findTriggerObjectInfo(tObj_);
-    dumpTriggerObjectInfo(tObj_);
+    //dumpTriggerObjectInfo(tObj_);
     fsrPVec_ = getFSRPhotonVec();
     getZtnPpair();
   }
@@ -274,10 +275,11 @@ void ZTnpAnalysis::getZtnPpair() {
     double iso = HZZ4lUtil::computeMuonReliso(ip, fsrPVec_, 0.01, 0.3);   
     if (iso >= 0.35) continue; // it is already scaled by pT
     int matchedidx;
-    bool trigMatched = matchTriggerObject(tObj_, tagP4, "HLT_IsoMu20_v", 
-                                          0, 30,matchedidx) < 0.05;
-    std::cout << "Tag trig matched" << std::endl;
-
+    bool trigMatched = matchTriggerObject(tObj_, tagP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
+    || matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
+    || matchTriggerObject(tObj_, tagP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02
+    || matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu22_v", 0, 30,matchedidx) < 0.02;
+    if (!trigMatched) continue; // it is already scaled by pT
 
     for (unsigned int j = i+1; j < tightMuon_.size(); ++j) {
       const auto& jp = tightMuon_[j].first;
@@ -301,7 +303,8 @@ void ZTnpAnalysis::endJob() {
   histf()->cd();
   histf()->Write();
   histf()->Close();
-  outTreeFile_->Write();
+  outTree_->AutoSave();
+  //outTreeFile_->Write();
   outTreeFile_->Close();
 }
 // -------------------------------------------------------------------------------

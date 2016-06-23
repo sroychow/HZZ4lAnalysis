@@ -1061,7 +1061,7 @@ double AnaBase::matchTriggerObject(const vector<TriggerObject>& trigObjList,
       //if (path.find(trigPath) != string::npos && flag == 1) {
       if (path.find(trigPath) != string::npos) {
         matched = true;
-        std::cout << "Matched Path=" << path << std::endl;
+        //std::cout << "Matched Path=" << path << std::endl;
         break;
       }
     }

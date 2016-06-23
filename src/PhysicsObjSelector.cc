@@ -553,7 +553,7 @@ void PhysicsObjSelector::dumpEvent(bool dumpGen, bool showEvent, ostream& os) co
   os << std::setprecision(3);
 
   // Event
-  if (showEvent) showEventNumber(os);
+  if (showEvent) showEventNumber(true, os);
 
   // Muons
   if (muonColl()->size()) {
