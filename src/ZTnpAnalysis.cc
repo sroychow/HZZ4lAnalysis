@@ -52,6 +52,7 @@ ZTnpAnalysis::ZTnpAnalysis()
   : PhysicsObjSelector(),
     treeFname_("zTnPisoTree.root")
 {
+  nTnP = 0;
 }
 // ----------
 // Destructor
@@ -67,75 +68,110 @@ bool ZTnpAnalysis::beginJob()
   outTreeFile_ = TFile::Open(treeFname_.c_str(),"recreate");
   outTreeFile_->cd();
   outTree_ = new TTree("tree","muTnP tree for iso");
-  outTree_->Branch("TnP_eta",&zcand.TnP_eta);
-  outTree_->Branch("TnP_phi",&zcand.TnP_phi);
-  outTree_->Branch("TnP_mass",&zcand.TnP_mass);
-  outTree_->Branch("TnP_hasFSR",&zcand.TnP_hasFSR);
-  outTree_->Branch("TnP_mll",&zcand.TnP_mll);
-  outTree_->Branch("TnP_l1_pdgId",&zcand.TnP_l1_pdgId);
-  outTree_->Branch("TnP_l1_pt",&zcand.TnP_l1_pt);
-  outTree_->Branch("TnP_l1_eta",&zcand.TnP_l1_eta);
-  outTree_->Branch("TnP_l1_phi",&zcand.TnP_l1_phi);
-  outTree_->Branch("TnP_l1_mass",&zcand.TnP_l1_mass);
-  outTree_->Branch("TnP_l1_charge",&zcand.TnP_l1_charge);
-  outTree_->Branch("TnP_l1_tightId",&zcand.TnP_l1_tightId);
-  outTree_->Branch("TnP_l1_looseId",&zcand.TnP_l1_looseId);
-  outTree_->Branch("TnP_l1_dxy",&zcand.TnP_l1_dxy);
-  outTree_->Branch("TnP_l1_dz",&zcand.TnP_l1_dz);
-  outTree_->Branch("TnP_l1_edxy",&zcand.TnP_l1_edxy);
-  outTree_->Branch("TnP_l1_edz",&zcand.TnP_l1_edz);
-  outTree_->Branch("TnP_l1_ip3d",&zcand.TnP_l1_ip3d);
-  outTree_->Branch("TnP_l1_sip3d",&zcand.TnP_l1_sip3d);
-  outTree_->Branch("TnP_l1_ptErr",&zcand.TnP_l1_ptErr);
-  outTree_->Branch("TnP_l1_lostHits",&zcand.TnP_l1_lostHits);
-  outTree_->Branch("TnP_l1_trackerLayers",&zcand.TnP_l1_trackerLayers);
-  outTree_->Branch("TnP_l1_pixelLayers",&zcand.TnP_l1_pixelLayers);
-  outTree_->Branch("TnP_l1_etaSc",&zcand.TnP_l1_etaSc);
-  outTree_->Branch("TnP_l1_isGap",&zcand.TnP_l1_isGap);
-  outTree_->Branch("TnP_l1_r9",&zcand.TnP_l1_r9);
-  outTree_->Branch("TnP_l1_convVeto",&zcand.TnP_l1_convVeto);
-  outTree_->Branch("TnP_l1_mvaIdSpring15",&zcand.TnP_l1_mvaIdSpring15);
-  outTree_->Branch("TnP_l1_relIsoAfterFSR",&zcand.TnP_l1_relIsoAfterFSR);
-  outTree_->Branch("TnP_l1_chargedHadIso03",&zcand.TnP_l1_chargedHadIso03);
-  outTree_->Branch("TnP_l1_hasOwnFSR",&zcand.TnP_l1_hasOwnFSR);
-  outTree_->Branch("TnP_l1_hlt1L",&zcand.TnP_l1_hlt1L);
-  outTree_->Branch("TnP_l1_p4WithFSR_pt",&zcand.TnP_l1_p4WithFSR_pt);
-  outTree_->Branch("TnP_l1_p4WithFSR_eta",&zcand.TnP_l1_p4WithFSR_eta);
-  outTree_->Branch("TnP_l1_p4WithFSR_phi",&zcand.TnP_l1_p4WithFSR_phi);
-  outTree_->Branch("TnP_l1_p4WithFSR_mass",&zcand.TnP_l1_p4WithFSR_mass);
-  outTree_->Branch("TnP_l2_pdgId",&zcand.TnP_l2_pdgId);
-  outTree_->Branch("TnP_l2_pt",&zcand.TnP_l2_pt);
-  outTree_->Branch("TnP_l2_eta",&zcand.TnP_l2_eta);
-  outTree_->Branch("TnP_l2_phi",&zcand.TnP_l2_phi);
-  outTree_->Branch("TnP_l2_mass",&zcand.TnP_l2_mass);
-  outTree_->Branch("TnP_l2_charge",&zcand.TnP_l2_charge);
-  outTree_->Branch("TnP_l2_tightId",&zcand.TnP_l2_tightId);
-  outTree_->Branch("TnP_l2_looseId",&zcand.TnP_l2_looseId);
-  outTree_->Branch("TnP_l2_dxy",&zcand.TnP_l2_dxy);
-  outTree_->Branch("TnP_l2_dz",&zcand.TnP_l2_dz);
-  outTree_->Branch("TnP_l2_edxy",&zcand.TnP_l2_edxy);
-  outTree_->Branch("TnP_l2_edz",&zcand.TnP_l2_edz);
-  outTree_->Branch("TnP_l2_ip3d",&zcand.TnP_l2_ip3d);
-  outTree_->Branch("TnP_l2_sip3d",&zcand.TnP_l2_sip3d);
-  outTree_->Branch("TnP_l2_ptErr",&zcand.TnP_l2_ptErr);
-  outTree_->Branch("TnP_l2_lostHits",&zcand.TnP_l2_lostHits);
-  outTree_->Branch("TnP_l2_trackerLayers",&zcand.TnP_l2_trackerLayers);
-  outTree_->Branch("TnP_l2_pixelLayers",&zcand.TnP_l2_pixelLayers);
-  outTree_->Branch("TnP_l2_etaSc",&zcand.TnP_l2_etaSc);
-  outTree_->Branch("TnP_l2_isGap",&zcand.TnP_l2_isGap);
-  outTree_->Branch("TnP_l2_r9",&zcand.TnP_l2_r9);
-  outTree_->Branch("TnP_l2_convVeto",&zcand.TnP_l2_convVeto);
-  outTree_->Branch("TnP_l2_mvaIdSpring15",&zcand.TnP_l2_mvaIdSpring15);
-  outTree_->Branch("TnP_l2_relIsoAfterFSR",&zcand.TnP_l2_relIsoAfterFSR);
-  outTree_->Branch("TnP_l2_chargedHadIso03",&zcand.TnP_l2_chargedHadIso03);
-  outTree_->Branch("TnP_l2_hasOwnFSR",&zcand.TnP_l2_hasOwnFSR);
-  outTree_->Branch("TnP_l2_hlt1L",&zcand.TnP_l2_hlt1L);
-  outTree_->Branch("TnP_l2_p4WithFSR_pt",&zcand.TnP_l2_p4WithFSR_pt);
-  outTree_->Branch("TnP_l2_p4WithFSR_eta",&zcand.TnP_l2_p4WithFSR_eta);
-  outTree_->Branch("TnP_l2_p4WithFSR_phi",&zcand.TnP_l2_p4WithFSR_phi);
-  outTree_->Branch("TnP_l2_p4WithFSR_mass",&zcand.TnP_l2_p4WithFSR_mass);
+  outTree_->Branch("run",&run,"run/I");
+  outTree_->Branch("lumi",&lumi,"lumi/I");
+  outTree_->Branch("event",&event,"event/I");
+  outTree_->Branch("nTnP",&nTnP,"nTnP/I");
   
-  
+  outTree_->Branch("TnP_pt",TnP_pt,"TnP_pt[nTnP]/F");
+  outTree_->Branch("TnP_eta",TnP_eta,"TnP_eta[nTnP]/F");
+  outTree_->Branch("TnP_phi",TnP_phi,"TnP_phi[nTnP]/F");
+  outTree_->Branch("TnP_mass",TnP_mass,"TnP_mass[nTnP]/F");
+  outTree_->Branch("TnP_hasFSR",TnP_hasFSR,"TnP_hasFSR[nTnP]/I");
+  outTree_->Branch("TnP_mll",TnP_mll,"TnP_mll[nTnP]/F");
+  outTree_->Branch("TnP_l1_pdgId",TnP_l1_pdgId,"TnP_l1_pdgId[nTnP]/I");
+  outTree_->Branch("TnP_l1_pt",TnP_l1_pt,"TnP_l1_pt[nTnP]/F");
+  outTree_->Branch("TnP_l1_eta",TnP_l1_eta,"TnP_l1_eta[nTnP]/F");
+  outTree_->Branch("TnP_l1_phi",TnP_l1_phi,"TnP_l1_phi[nTnP]/F");
+  outTree_->Branch("TnP_l1_mass",TnP_l1_mass,"TnP_l1_mass[nTnP]/F");
+  outTree_->Branch("TnP_l1_charge",TnP_l1_charge,"TnP_l1_charge[nTnP]/I");
+  outTree_->Branch("TnP_l1_tightId",TnP_l1_tightId,"TnP_l1_tightId[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_looseId",TnP_l1_looseId,"TnP_l1_looseId[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_dxy",TnP_l1_dxy,"TnP_l1_dxy[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_dz",TnP_l1_dz,"TnP_l1_dz[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_edxy",TnP_l1_edxy,"TnP_l1_edxy[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_edz",TnP_l1_edz,"TnP_l1_edz[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_ip3d",TnP_l1_ip3d,"TnP_l1_ip3d[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_sip3d",TnP_l1_sip3d,"TnP_l1_sip3d[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_ptErr",TnP_l1_ptErr,"TnP_l1_ptErr[nTnP]/F");
+ 
+  outTree_->Branch("TnP_l1_lostHits",TnP_l1_lostHits,"TnP_l1_lostHits[nTnP]/I");
+ 
+  outTree_->Branch("TnP_l1_trackerLayers",TnP_l1_trackerLayers,"TnP_l1_trackerLayer[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_pixelLayers",TnP_l1_pixelLayers,"TnP_l1_pixelLayers[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_etaSc",TnP_l1_etaSc,"TnP_l1_etaSc[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_isGap",TnP_l1_isGap,"TnP_l1_isGap[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_r9",TnP_l1_r9,"TnP_l1_r9[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_convVeto",TnP_l1_convVeto,"TnP_l1_convVeto[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_mvaIdSpring15",TnP_l1_mvaIdSpring15,"TnP_l1_mvaIdSpring15[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_relIsoAfterFSR",TnP_l1_relIsoAfterFSR,"TnP_l1_relIsoAfterFSR[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_chargedHadIso03",TnP_l1_chargedHadIso03,"TnP_l1_chargedHadIso03[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_hasOwnFSR",TnP_l1_hasOwnFSR,"TnP_l1_hasOwnFSR[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_hlt1L",TnP_l1_hlt1L,"TnP_l1_hlt1L[nTnP]/I");
+
+  outTree_->Branch("TnP_l1_p4WithFSR_pt",TnP_l1_p4WithFSR_pt,"TnP_l1_p4WithFSR_pt[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_p4WithFSR_eta",TnP_l1_p4WithFSR_eta,"TnP_l1_p4WithFSR_eta[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_p4WithFSR_phi",TnP_l1_p4WithFSR_phi,"TnP_l1_p4WithFSR_phi[nTnP]/F");
+
+  outTree_->Branch("TnP_l1_p4WithFSR_mass",TnP_l1_p4WithFSR_mass,"TnP_l1_p4WithFSR_mass[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_pdgId",TnP_l2_pdgId,"TnP_l2_pdgId[nTnP]/I");
+
+  outTree_->Branch("TnP_l2_pt",TnP_l2_pt,"TnP_l2_pt[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_eta",TnP_l2_eta,"TnP_l2_eta[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_phi",TnP_l2_phi,"TnP_l2_phi[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_mass",TnP_l2_mass,"TnP_eta[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_charge",TnP_l2_charge,"TnP_l2_charge[nTnP]/I");
+  outTree_->Branch("TnP_l2_tightId",TnP_l2_tightId,"TnP_l2_tightId[nTnP]/I");
+  outTree_->Branch("TnP_l2_looseId",TnP_l2_looseId,"TnP_l2_looseId[nTnP]/I");
+  outTree_->Branch("TnP_l2_dxy",TnP_l2_dxy,"TnP_l2_dxy[nTnP]/F");
+  outTree_->Branch("TnP_l2_dz",TnP_l2_dz,"TnP_l2_dz[nTnP]/F");
+  outTree_->Branch("TnP_l2_edxy",TnP_l2_edxy,"TnP_l2_edxy[nTnP]/F");
+  outTree_->Branch("TnP_l2_edz",TnP_l2_edz,"TnP_l2_edz[nTnP]/F");
+
+  outTree_->Branch("TnP_l2_ip3d",TnP_l2_ip3d,"TnP_l2_ip3d[nTnP]/F");
+  outTree_->Branch("TnP_l2_sip3d",TnP_l2_sip3d,"TnP_l2_sip3d[nTnP]/F");
+  outTree_->Branch("TnP_l2_ptErr",TnP_l2_ptErr,"TnP_l2_ptErr[nTnP]/F");
+  outTree_->Branch("TnP_l2_lostHits",TnP_l2_lostHits,"TnP_l2_lostHits[nTnP]/I");
+  outTree_->Branch("TnP_l2_trackerLayers",TnP_l2_trackerLayers,"TnP_l2_trackerLayers[nTnP]/I");
+  outTree_->Branch("TnP_l2_pixelLayers",TnP_l2_pixelLayers,"TnP_l2_pixelLayers[nTnP]/I");
+  outTree_->Branch("TnP_l2_etaSc",TnP_l2_etaSc,"TnP_l2_etaSc[nTnP]/F");
+  outTree_->Branch("TnP_l2_isGap",TnP_l2_isGap,"TnP_l2_isGap[nTnP]/I");
+  outTree_->Branch("TnP_l2_r9",TnP_l2_r9,"TnP_l2_r9[nTnP]/F");
+  outTree_->Branch("TnP_l2_convVeto",TnP_l2_convVeto,"TnP_l2_convVeto[nTnP]/I");
+  outTree_->Branch("TnP_l2_mvaIdSpring15",TnP_l2_mvaIdSpring15,"TnP_l2_mvaIdSpring15[nTnP]/F");
+  outTree_->Branch("TnP_l2_relIsoAfterFSR",TnP_l2_relIsoAfterFSR,"TnP_l2_relIsoAfterFSR[nTnP]/F");
+  outTree_->Branch("TnP_l2_chargedHadIso03",TnP_l2_chargedHadIso03,"TnP_l2_chargedHadIso03[nTnP]/F");
+  outTree_->Branch("TnP_l2_hasOwnFSR",TnP_l2_hasOwnFSR,"TnP_l2_hasOwnFSR[nTnP]/I");
+  outTree_->Branch("TnP_l2_hlt1L",TnP_l2_hlt1L,"TnP_l2_hlt1L[nTnP]/I");
+  outTree_->Branch("TnP_l2_p4WithFSR_pt",TnP_l2_p4WithFSR_pt,"TnP_l2_p4WithFSR_pt[nTnP]/F");
+  outTree_->Branch("TnP_l2_p4WithFSR_eta",TnP_l2_p4WithFSR_eta,"TnP_l2_p4WithFSR_eta[nTnP]/F");
+  outTree_->Branch("TnP_l2_p4WithFSR_phi",TnP_l2_p4WithFSR_phi,"TnP_l2_p4WithFSR_phi[nTnP]/F");
+  outTree_->Branch("TnP_l2_p4WithFSR_mass",TnP_l2_p4WithFSR_mass,"TnP_l2_p4WithFSR_mass[nTnP]/F");
   // Open the output ROOT file (in AnaBase)
   PhysicsObjSelector::beginJob();
   
@@ -255,19 +291,30 @@ void ZTnpAnalysis::eventLoop()
     
     // main analysis object selection
     findObjects(puevWt_);
+    ///std::cout << "P1\n";
     histf()->cd("ZTnpAnalysis");
     tightMuon_ = getTightMuPhotonPairList();
     if(tightMuon_.size() < 2)         continue;
     AnaUtil::fillHist1D("evtCutFlow", 4, puevWt_);   
     findTriggerObjectInfo(tObj_);
+    //std::cout << "P2\n";
     //dumpTriggerObjectInfo(tObj_);
     fsrPVec_ = getFSRPhotonVec();
+    nTnP = 0;
+    run = eventColl()->at(0).run;
+    event = eventColl()->at(0).event;
+    lumis = eventColl()->at(0).lumis;
     getZtnPpair();
+    //std::cout << "P3\n";
+    outTree_->Fill();
+    //std::cout << "P4\n"; 
   }
   // Analysis is over
   endJob();
 }
 void ZTnpAnalysis::getZtnPpair() {
+  int n = 0;
+  std::vector<vhtm::ZtnP>  zvec;
   for (unsigned int i = 0; i < tightMuon_.size(); ++i) {
     const auto& tagmu = tightMuon_[i].first;
     TLorentzVector tagP4 = HZZ4lUtil::getP4(tagmu);
@@ -303,83 +350,159 @@ void ZTnpAnalysis::getZtnPpair() {
       //compute TnP pair P4
       TLorentzVector tnpP4 = tagP4 + probeP4;
       TLorentzVector tnpP4wfsr = tagP4wfsr + probeP4wfsr;
+      vhtm::ZtnP ztemp;
+      ztemp.TnP_pt = tnpP4.Pt();
       //Fill TnP pair property
-      zcand.flavour = HZZ4lUtil::ZType::mumu;
-      zcand.TnP_eta = tnpP4.Eta();   
-      zcand.TnP_phi = tnpP4.Phi();   
-      zcand.TnP_mass = tnpP4wfsr.M();   //with fsr
-      zcand.TnP_hasFSR = taghasfsr || probehasfsr;   
-      zcand.TnP_mll = tnpP4.M();   //without fsr
+      ztemp.TnP_pt = tnpP4.Pt();
+      ztemp.TnP_eta = tnpP4.Eta();   
+      ztemp.TnP_phi = tnpP4.Phi();   
+      ztemp.TnP_mass = tnpP4wfsr.M();   //with fsr
+      ztemp.TnP_hasFSR = taghasfsr || probehasfsr;   
+      ztemp.TnP_mll = tnpP4.M();   //without fsr
       //tag property
-      zcand.TnP_l1_pdgId = (tagmu.charge > 0) ? 13 : -13;   
-      zcand.TnP_l1_pt = tagP4.Pt();   
-      zcand.TnP_l1_eta = tagP4.Eta();   
-      zcand.TnP_l1_phi = tagP4.Phi();   
-      zcand.TnP_l1_mass = tagP4.M();   
-      zcand.TnP_l1_charge = tagmu.charge;   
-      zcand.TnP_l1_tightId = 1;   
-      zcand.TnP_l1_looseId = 1;   
-      zcand.TnP_l1_dxy = tagmu.dxyPV;   
-      zcand.TnP_l1_dz  = tagmu.dzPV;   
-      zcand.TnP_l1_edxy = -1;   //not saved in our tree 
-      zcand.TnP_l1_edz = -1;//not saved in out tree
-      zcand.TnP_l1_ip3d = tagmu.dB3D;   //check
-      zcand. TnP_l1_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
-      zcand.TnP_l1_ptErr = -1;//NS   
-      zcand.TnP_l1_lostHits = 0;//NS   
-      zcand.TnP_l1_trackerLayers = tagmu.trkHits;   
-      zcand.TnP_l1_pixelLayers = tagmu.pixHits;   
-      //zcand.TnP_l1_etaSc = -1;   
-      //zcand.TnP_l1_isGap = -1;   
-      //zcand.TnP_l1_r9 = -1;   
-      //zcand.TnP_l1_convVeto = -1;   
-      //zcand.TnP_l1_mvaIdSpring15 = -1;;   
-      zcand.TnP_l1_relIsoAfterFSR = tagiso;   
-      zcand.TnP_l1_chargedHadIso03 = tagmu.pfChargedHadIsoR03;   
-      zcand.TnP_l1_hasOwnFSR  = 1; //doubt
-      zcand.TnP_l1_hlt1L = 1; //doubt  
-      zcand.TnP_l1_p4WithFSR_pt = tagP4wfsr.Pt();   
-      zcand.TnP_l1_p4WithFSR_eta = tagP4wfsr.Eta();   
-      zcand.TnP_l1_p4WithFSR_phi = tagP4wfsr.Phi();   
-      zcand.TnP_l1_p4WithFSR_mass = tagP4wfsr.M();   
+      ztemp.TnP_l1_pdgId = (tagmu.charge > 0) ? 13 : -13;   
+      ztemp.TnP_l1_pt = tagP4.Pt();   
+      ztemp.TnP_l1_eta = tagP4.Eta();   
+      ztemp.TnP_l1_phi = tagP4.Phi();   
+      ztemp.TnP_l1_mass = tagP4.M();   
+      ztemp.TnP_l1_charge = tagmu.charge;   
+      ztemp.TnP_l1_tightId = 1;   
+      ztemp.TnP_l1_looseId = 1;   
+      ztemp.TnP_l1_dxy = tagmu.dxyPV;   
+      ztemp.TnP_l1_dz  = tagmu.dzPV;   
+      ztemp.TnP_l1_edxy = -1;   //not saved in our tree 
+      ztemp.TnP_l1_edz = -1;//not saved in out tree
+      ztemp.TnP_l1_ip3d = tagmu.dB3D;   //check
+      ztemp.TnP_l1_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
+      ztemp.TnP_l1_ptErr = -1;//NS   
+      ztemp.TnP_l1_lostHits = 0;//NS   
+      ztemp.TnP_l1_trackerLayers = tagmu.trkHits;   
+      ztemp.TnP_l1_pixelLayers = tagmu.pixHits;   
+      ztemp.TnP_l1_etaSc = -1;   
+      ztemp.TnP_l1_isGap = -1;   
+      ztemp.TnP_l1_r9 = -1;   
+      ztemp.TnP_l1_convVeto = -1;   
+      ztemp.TnP_l1_mvaIdSpring15 = -1;;   
+      ztemp.TnP_l1_relIsoAfterFSR = tagiso;   
+      ztemp.TnP_l1_chargedHadIso03 = tagmu.pfChargedHadIsoR03;   
+      ztemp.TnP_l1_hasOwnFSR  = taghasfsr; //doubt
+      ztemp.TnP_l1_hlt1L = 1; //doubt  
+      ztemp.TnP_l1_p4WithFSR_pt = tagP4wfsr.Pt();   
+      ztemp.TnP_l1_p4WithFSR_eta = tagP4wfsr.Eta();   
+      ztemp.TnP_l1_p4WithFSR_phi = tagP4wfsr.Phi();   
+      ztemp.TnP_l1_p4WithFSR_mass = tagP4wfsr.M();   
       //probe property
-      zcand.TnP_l2_pdgId = (probemu.charge > 0) ? 13 : -13;   
-      zcand.TnP_l2_pt = probeP4.Pt();   
-      zcand.TnP_l2_eta = probeP4.Eta();   
-      zcand.TnP_l2_phi = probeP4.Phi();   
-      zcand.TnP_l2_mass = probeP4.M();   
-      zcand.TnP_l2_charge = probemu.charge;   
-      zcand.TnP_l2_tightId = 1;   
-      zcand.TnP_l2_looseId = 1;   
-      zcand.TnP_l2_dxy = probemu.dxyPV;   
-      zcand.TnP_l2_dz  = probemu.dzPV;   
-      zcand.TnP_l2_edxy = -1;   //correct? 
-      zcand.TnP_l2_edz = -1;
-      zcand.TnP_l2_ip3d = tagmu.dB3D;   //check
-      zcand. TnP_l2_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
-      zcand.TnP_l2_ptErr = -1;   
-      zcand.TnP_l2_lostHits = 0;   
-      zcand.TnP_l2_trackerLayers = probemu.trkHits;   
-      zcand.TnP_l2_pixelLayers = probemu.pixHits;   
-      //zcand.TnP_l2_etaSc = -1;   
-      //zcand.TnP_l2_isGap = -1;   
-      //zcand.TnP_l2_r9 = -1;   
-      //zcand.TnP_l2_convVeto = -1;   
-      //zcand.TnP_l2_mvaIdSpring15 = -1;;   
-      zcand.TnP_l2_relIsoAfterFSR = probeiso;   
-      zcand.TnP_l2_chargedHadIso03 = probemu.pfChargedHadIsoR03;   
-      zcand.TnP_l2_hasOwnFSR  = 1; //doubt
-      zcand.TnP_l2_hlt1L = matchTriggerObject(tObj_, probeP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
+      ztemp.TnP_l2_pdgId = (probemu.charge > 0) ? 13 : -13;   
+      ztemp.TnP_l2_pt = probeP4.Pt();   
+      ztemp.TnP_l2_eta = probeP4.Eta();   
+      ztemp.TnP_l2_phi = probeP4.Phi();   
+      ztemp.TnP_l2_mass = probeP4.M();   
+      ztemp.TnP_l2_charge = probemu.charge;   
+      ztemp.TnP_l2_tightId = 1;   
+      ztemp.TnP_l2_looseId = 1;   
+      ztemp.TnP_l2_dxy = probemu.dxyPV;   
+      ztemp.TnP_l2_dz  = probemu.dzPV;   
+      ztemp.TnP_l2_edxy = -1;   //correct? 
+      ztemp.TnP_l2_edz = -1;
+      ztemp.TnP_l2_ip3d = tagmu.dB3D;   //check
+      ztemp.TnP_l2_sip3d = std::fabs(tagmu.dB3D/tagmu.edB3D);   //check
+      ztemp.TnP_l2_ptErr = -1;   
+      ztemp.TnP_l2_lostHits = 0;   
+      ztemp.TnP_l2_trackerLayers = probemu.trkHits;   
+      ztemp.TnP_l2_pixelLayers = probemu.pixHits;   
+      ztemp.TnP_l2_etaSc = -1;   
+      ztemp.TnP_l2_isGap = -1;   
+      ztemp.TnP_l2_r9 = -1;   
+      ztemp.TnP_l2_convVeto = -1;   
+      ztemp.TnP_l2_mvaIdSpring15 = -1;;   
+      ztemp.TnP_l2_relIsoAfterFSR = probeiso;   
+      ztemp.TnP_l2_chargedHadIso03 = probemu.pfChargedHadIsoR03;   
+      ztemp.TnP_l2_hasOwnFSR  = probehasfsr; //doubt
+      ztemp.TnP_l2_hlt1L = matchTriggerObject(tObj_, probeP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
                            || matchTriggerObject(tObj_, probeP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
                            || matchTriggerObject(tObj_, probeP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02
                            || matchTriggerObject(tObj_, probeP4, "HLT_IsoTkMu22_v", 0, 30,matchedidx) < 0.02; 
-      zcand.TnP_l2_p4WithFSR_pt = probeP4wfsr.Pt();   
-      zcand.TnP_l2_p4WithFSR_eta = probeP4wfsr.Eta();   
-      zcand.TnP_l2_p4WithFSR_phi = probeP4wfsr.Phi();   
-      zcand.TnP_l2_p4WithFSR_mass = probeP4wfsr.M();  
-      outTree_->Fill();
+      ztemp.TnP_l2_p4WithFSR_pt = probeP4wfsr.Pt();   
+      ztemp.TnP_l2_p4WithFSR_eta = probeP4wfsr.Eta();   
+      ztemp.TnP_l2_p4WithFSR_phi = probeP4wfsr.Phi();   
+      ztemp.TnP_l2_p4WithFSR_mass = probeP4wfsr.M(); 
+      n++;
+      zvec.push_back(ztemp);
     }
   }
+  nTnP = n;
+  for(int i = 0; i<n; i++) {
+    TnP_pt[i] = zvec[i].TnP_pt;
+    
+    TnP_eta[i] = zvec[i].TnP_eta;   
+    TnP_phi[i] = zvec[i].TnP_phi;  
+    TnP_mass[i] = zvec[i].TnP_mass;   
+    TnP_hasFSR[i] = zvec[i].TnP_hasFSR;   
+    TnP_mll[i] = zvec[i].TnP_mll;   
+    TnP_l1_pdgId[i] = zvec[i].TnP_l1_pdgId;   
+    TnP_l1_pt[i] = zvec[i].TnP_l1_pt;   
+    TnP_l1_eta[i] = zvec[i].TnP_l1_eta;   
+    TnP_l1_phi[i] = zvec[i].TnP_l1_phi;   
+    TnP_l1_mass[i] = zvec[i].TnP_l1_mass;   
+    TnP_l1_charge[i] = zvec[i].TnP_l1_charge;   
+    TnP_l1_tightId[i] = zvec[i].TnP_l1_tightId;   
+    TnP_l1_looseId[i] = zvec[i].TnP_l1_looseId;   
+    TnP_l1_dxy[i] = zvec[i].TnP_l1_dxy;   
+    TnP_l1_dz[i] = zvec[i].TnP_l1_dz;   
+    TnP_l1_edxy[i] = zvec[i].TnP_l1_edxy;   
+    TnP_l1_edz[i] = zvec[i].TnP_l1_edz;   
+    TnP_l1_ip3d[i] = zvec[i].TnP_l1_ip3d;   
+    TnP_l1_sip3d[i] = zvec[i].TnP_l1_sip3d;   
+    TnP_l1_ptErr[i] = zvec[i].TnP_l1_ptErr;   
+    TnP_l1_lostHits[i] = zvec[i].TnP_l1_lostHits;   
+    TnP_l1_trackerLayers[i] = zvec[i].TnP_l1_trackerLayers;   
+    TnP_l1_pixelLayers[i] = zvec[i].TnP_l1_pixelLayers;   
+    TnP_l1_etaSc[i] = zvec[i].TnP_l1_etaSc;   
+    TnP_l1_isGap[i] = zvec[i].TnP_l1_isGap;   
+    TnP_l1_r9[i] = zvec[i].TnP_l1_r9;   
+    TnP_l1_convVeto[i] = zvec[i].TnP_l1_convVeto;   
+    TnP_l1_mvaIdSpring15[i] = zvec[i].TnP_l1_mvaIdSpring15;   
+    TnP_l1_relIsoAfterFSR[i] = zvec[i].TnP_l1_relIsoAfterFSR;   
+    TnP_l1_chargedHadIso03[i] = zvec[i].TnP_l1_chargedHadIso03;   
+    TnP_l1_hasOwnFSR[i] = zvec[i].TnP_l1_hasOwnFSR;   
+    TnP_l1_hlt1L[i] = zvec[i].TnP_l1_hlt1L;   
+    TnP_l1_p4WithFSR_pt[i] = zvec[i].TnP_l1_p4WithFSR_pt;   
+    TnP_l1_p4WithFSR_eta[i] = zvec[i].TnP_l1_p4WithFSR_eta;   
+    TnP_l1_p4WithFSR_phi[i] = zvec[i].TnP_l1_p4WithFSR_phi;   
+    TnP_l1_p4WithFSR_mass[i] = zvec[i].TnP_l1_p4WithFSR_mass;   
+    TnP_l2_pdgId[i] = zvec[i].TnP_l2_pdgId;   
+    TnP_l2_pt[i] = zvec[i].TnP_l2_pt;   
+    TnP_l2_eta[i] = zvec[i].TnP_l2_eta;   
+    TnP_l2_phi[i] = zvec[i].TnP_l2_phi;   
+    TnP_l2_mass[i] = zvec[i].TnP_l2_mass;   
+    TnP_l2_charge[i] = zvec[i].TnP_l2_charge;   
+    TnP_l2_tightId[i] = zvec[i].TnP_l2_tightId;   
+    TnP_l2_looseId[i] = zvec[i].TnP_l2_looseId;   
+    TnP_l2_dxy[i] = zvec[i].TnP_l2_dxy;   
+    TnP_l2_dz[i] = zvec[i].TnP_l2_dz;   
+    TnP_l2_edxy[i] = zvec[i].TnP_l2_edxy;   
+    TnP_l2_edz[i] = zvec[i].TnP_l2_edz;   
+    TnP_l2_ip3d[i] = zvec[i].TnP_l2_ip3d;   
+    TnP_l2_sip3d[i] = zvec[i].TnP_l2_sip3d;   
+    TnP_l2_ptErr[i] = zvec[i].TnP_l2_ptErr;   
+    TnP_l2_lostHits[i] = zvec[i].TnP_l2_lostHits;   
+    TnP_l2_trackerLayers[i] = zvec[i].TnP_l2_trackerLayers;   
+    TnP_l2_pixelLayers[i] = zvec[i].TnP_l2_pixelLayers;   
+    TnP_l2_etaSc[i] = zvec[i].TnP_l2_etaSc;   
+    TnP_l2_isGap[i] = zvec[i].TnP_l2_isGap;   
+    TnP_l2_r9[i] = zvec[i].TnP_l2_r9;   
+    TnP_l2_convVeto[i] = zvec[i].TnP_l2_convVeto;   
+    TnP_l2_mvaIdSpring15[i] = zvec[i].TnP_l2_mvaIdSpring15;   
+    TnP_l2_relIsoAfterFSR[i] = zvec[i].TnP_l2_relIsoAfterFSR;   
+    TnP_l2_chargedHadIso03[i] = zvec[i].TnP_l2_chargedHadIso03;   
+    TnP_l2_hasOwnFSR[i] = zvec[i].TnP_l2_hasOwnFSR;   
+    TnP_l2_hlt1L[i] = zvec[i].TnP_l2_hlt1L;   
+    TnP_l2_p4WithFSR_pt[i] = zvec[i].TnP_l2_p4WithFSR_pt;   
+    TnP_l2_p4WithFSR_eta[i] = zvec[i].TnP_l2_p4WithFSR_eta;   
+    TnP_l2_p4WithFSR_phi[i] = zvec[i].TnP_l2_p4WithFSR_phi;   
+    TnP_l2_p4WithFSR_mass[i] = zvec[i].TnP_l2_p4WithFSR_mass;
+  }
+  //std::cout << "NTnP=" << n << std::endl;
 }
 void ZTnpAnalysis::endJob() {
   closeFiles();

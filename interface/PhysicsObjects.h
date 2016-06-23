@@ -626,7 +626,8 @@ class ZtnP : public TObject {
   ZtnP();
   virtual ~ZtnP(){}
 
-  int  flavour;//0=mumu,1=ee,2=wrong   float         TnP_pt;   //[nTnP]
+  int  flavour;//0=mumu,1=ee,2=wrong   
+  float         TnP_pt;   //[nTnP]
   float         TnP_eta;   //[nTnP]
   float         TnP_phi;   //[nTnP]
   float         TnP_mass;   //[nTnP]
