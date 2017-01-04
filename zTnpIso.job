@@ -7,7 +7,7 @@ logFile   test_EvntSel_sync.out
 eventFile test_EvntSel_sync.out
 syncDumpFile syncDumpFile_newfsrsync.txt
 cloneFile selectedEvents_newfsrsync.root
-outputTreeFilename zTnPIso.root
+outputTreeFilename zTnPIso_mc.root
 cloneEvents 0
 logOption 0
 maxEvent -1
@@ -29,7 +29,7 @@ trigPathList HLT_IsoTkMu20_v
 trigPathList HLT_IsoMu22_v
 trigPathList HLT_IsoTkMu22_v
 #single file
-inputFile ../ZTnPmc_999.root
+inputFile root://se01.indiacms.res.in///store/user/sroychow/HZZ4lMiniAod/Run2/DYJetsZIsoTnP/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_DYJetsZTnPvJune2016/160620_153516/0000/ZTnPmc_10.root
 #list of input files
 #inputFileList Flist.txt
 useEventList 0

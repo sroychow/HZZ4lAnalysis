@@ -640,7 +640,7 @@ void AnaBase::findTauInfo(vector<Tau>& list, double vz, Options& op, ostream& os
     if (vz != -999 && std::abs(dz) >= AnaUtil::cutValue(tauCutMap_, "dz"))    sbit |= (1 << 2);
     if (tau.decayModeFinding <= 0.5)                                          sbit |= (1 << 3);
     if (tau.chargedIsoPtSum <= 2.0)                                           sbit |= (1 << 4); 
-    if (tau.againstMuonTight <= AnaUtil::cutValue(tauCutMap_, "muVeto"))      sbit |= (1 << 5);
+    /*if (tau.againstMuonTight <= AnaUtil::cutValue(tauCutMap_, "muVeto"))      sbit |= (1 << 5);
     if (tau.againstElectronLoose <= AnaUtil::cutValue(tauCutMap_, "eleVeto")) sbit |= (1 << 6); 
     
     if (op.verbose) {
@@ -660,7 +660,7 @@ void AnaBase::findTauInfo(vector<Tau>& list, double vz, Options& op, ostream& os
            << setw(5) << tau.againstElectronLooseMVA5;
         AnaUtil::bit_print(sbit, 8, os);
       }
-    }
+    }  */
     if (op.usesbit && sbit) continue;
     list.push_back(tau);
   }

@@ -1,5 +1,5 @@
-#ifndef __PhysicsObjects_h
-#define __PhysicsObjects_h
+#ifndef __AnalysisSpace_TreeMaker_PhysicsObjects_h
+#define __AnalysisSpace_TreeMaker_PhysicsObjects_h
 
 #include <vector>
 #include <map>
@@ -235,6 +235,10 @@ namespace vhtm {
     double met;
     double metphi;
     double sumet;
+    
+    double metJESUp;
+    double metJESDn;
+
     double metuncorr;
     double metphiuncorr;
     double sumetuncorr;
@@ -275,36 +279,36 @@ namespace vhtm {
     float ptSumNeutralHadronsIsoCone;
     float ptSumPhotonsIsoCone;
 
-     // tau id. discriminators
-     float decayModeFinding;
-     float decayModeFindingNewDMs;
-     float decayModeFindingOldDMs;
-
-     // discriminators against electrons/muons
-     float againstMuonLoose;
-     float againstMuonMedium;
-     float againstMuonTight;
-
-     float againstMuonLoose3;
-     float againstMuonTight3;
-
-     float againstElectronLoose;
-     float againstElectronMedium;
-     float againstElectronTight;
-     //float againstElectronMVA;
-  
-     float againstElectronLooseMVA5;
-     float againstElectronMediumMVA5;
-     float againstElectronTightMVA5;
-
-     float byLooseCombinedIsolationDeltaBetaCorr3Hits;
-     float byMediumCombinedIsolationDeltaBetaCorr3Hits;
-     float byTightCombinedIsolationDeltaBetaCorr3Hits;
-     float byCombinedIsolationDeltaBetaCorrRaw3Hits;
-     float chargedIsoPtSum;
-     float neutralIsoPtSum;
-     float puCorrPtSum;
-
+    // tau id. discriminators
+    float decayModeFinding;
+    float decayModeFindingNewDMs;
+    float decayModeFindingOldDMs;
+    
+    // discriminators against electrons/muons
+    float againstMuonLoose3;
+    float againstMuonTight3;
+    
+    float againstElectronVLooseMVA;
+    float againstElectronLooseMVA;
+    float againstElectronMediumMVA;
+    float againstElectronTightMVA;
+    float againstElectronVTightMVA;
+    
+    float byLooseCombinedIsolationDeltaBetaCorr3Hits;
+    float byMediumCombinedIsolationDeltaBetaCorr3Hits;
+    float byTightCombinedIsolationDeltaBetaCorr3Hits;
+    float byCombinedIsolationDeltaBetaCorrRaw3Hits;
+    
+    float byVLooseIsolationMVArun2v1DBoldDMwLT;
+    float byLooseIsolationMVArun2v1DBoldDMwLT;
+    float byMediumIsolationMVArun2v1DBoldDMwLT;
+    float byTightIsolationMVArun2v1DBoldDMwLT;
+    float byVTightIsolationMVArun2v1DBoldDMwLT;
+    
+    float chargedIsoPtSum;
+    float neutralIsoPtSum;
+    float puCorrPtSum;
+    
      // kinematic variables for PFJet associated to PFTau
     double jetPt;
     double jetEta;
@@ -329,6 +333,11 @@ namespace vhtm {
     bool isPFMuon;
     bool isghostCleaned;
     bool passTrackerhighPtid;
+    bool isLooseMuon;
+    bool isMediumMuon;
+    bool isTightMuon;
+    float chi2LocalPosition;
+    float trkKink;
 
     double eta;
     double phi;
@@ -345,10 +354,6 @@ namespace vhtm {
     double globalChi2;
     double tkNChi2;
 
-    float trkIso;
-    float ecalIso;
-    float hcalIso;
-    float hoIso;
     float pfChargedIsoR03;
     float pfChargedHadIsoR03;
     float pfNeutralHadIsoR03;
@@ -403,7 +408,6 @@ namespace vhtm {
     int selbit;
     std::map< std::string,std::vector<double> > isolationMap;
     ClassDef(Muon, 1)
-//    ClassDef(Muon, 2)
   };
   class Jet: public TObject {
   public:
@@ -598,29 +602,6 @@ namespace vhtm {
 
     ClassDef(Photon, 1)
   };
-
-class SelectedEvent : public TObject {
-  public:
-    SelectedEvent();
-    virtual ~SelectedEvent(){}
-    unsigned long int run;
-    unsigned long int lumi;
-    unsigned long int event;
-    double mass4l;
-    double mZ1;
-    double mZ2;
-    std::map<std::string,double>  kd;//D_bkg^kin,D_bkg,D_gg,D_HJJ^VBF,D_0
-    int nJets;
-    double jet1pt;
-    double jet2pt;
-    int category;
-    double m4lRefit;
-    double m4lRefitError;
-    double weight;
-    int flavour;//0=4mu,1=4e,2=2e2mu,3=2mu2e,4=wrong
-    void reset();
-    ClassDef(SelectedEvent,1)
-};
 class ZtnP : public TObject {
    public :
   ZtnP();

@@ -381,13 +381,13 @@ void ZTnpAnalysis::getZtnPpair() {
         int mid = 0;
         int genId = GenLevelMatching(tagP4, genObj_, genP4, mid);
         if(genId == -1) {
-          std::cout << "NOGEN" << std::endl;
+          //std::cout << "NOGEN" << std::endl;
           ztemp.TnP_l1_mcMatchId = 0;
           ztemp.TnP_l1_mcMatchAny = 0;
           ztemp.TnP_l1_mcPt = 0.;
           ztemp.TnP_l1_mcPt1 = 0.;
         } else {
-          if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
+          //if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
           ztemp.TnP_l1_mcMatchId = mid;
           ztemp.TnP_l1_mcMatchAny = 1;
           ztemp.TnP_l1_mcPt = genP4.Pt();
@@ -423,7 +423,8 @@ void ZTnpAnalysis::getZtnPpair() {
       ztemp.TnP_l2_r9 = -1;   
       ztemp.TnP_l2_convVeto = -1;   
       ztemp.TnP_l2_mvaIdSpring15 = -1;;   
-      ztemp.TnP_l2_relIsoAfterFSR = probeiso;   
+      ztemp.TnP_l2_relIsoAfterFSR = probeiso;
+      //if(probeiso > 0.35) std::cout << "FAILINGPROBE" << std::endl;      
       ztemp.TnP_l2_chargedHadIso03 = probemu.pfChargedHadIsoR03;   
       ztemp.TnP_l2_hasOwnFSR  = probehasfsr; //doubt
       if(isMC()) {
@@ -431,13 +432,13 @@ void ZTnpAnalysis::getZtnPpair() {
         int mid = 0;
         int genId = GenLevelMatching(probeP4, genObj_, genP4, mid);
         if(genId == -1) {
-          std::cout << "NOGEN" << std::endl;
+          //std::cout << "NOGEN" << std::endl;
           ztemp.TnP_l2_mcMatchId = 0;
           ztemp.TnP_l2_mcMatchAny = 0;
           ztemp.TnP_l2_mcPt = 0.;
           ztemp.TnP_l2_mcPt1 = 0.;
         } else {
-          if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
+          //if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
           ztemp.TnP_l2_mcMatchId = mid;
           ztemp.TnP_l2_mcMatchAny = 1;
           ztemp.TnP_l2_mcPt = genP4.Pt();
@@ -458,6 +459,7 @@ void ZTnpAnalysis::getZtnPpair() {
   }
   nTnP = n;
   for(int i = 0; i<n; i++) {
+    if(i>=10)   continue;
     TnP_pt[i] = zvec[i].TnP_pt;
     
     TnP_eta[i] = zvec[i].TnP_eta;   

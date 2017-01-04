@@ -18,7 +18,6 @@ ClassImp(vhtm::Candidate)
 ClassImp(vhtm::Photon)
 ClassImp(vhtm::PackedPFCandidate)
 ClassImp(vhtm::ZtnP)
-ClassImp(vhtm::SelectedEvent)
 
 vhtm::Candidate::Candidate():
   pt(-999), eta(-999), phi(-999) {} vhtm::Candidate::Candidate(float _pt, float _eta, float _phi):
@@ -63,6 +62,7 @@ vhtm::Event::Event():
   fGridRhoFastjetCentralChargedPileUp(-1),
   fGridRhoFastjetCentralNeutral(-1)
 {
+
   nPU.clear();
   bunchCrossing.clear();
   trueNInt.clear();
@@ -179,6 +179,8 @@ vhtm::MET::MET():
   met(-999),
   metphi(-999),
   sumet(-999),
+  metJESUp(-999),
+  metJESDn(-999),
   metuncorr(-999),
   metphiuncorr(-999),
   sumetuncorr(-999)
@@ -210,23 +212,22 @@ vhtm::Tau::Tau():
   ptSumPhotonsIsoCone(-999),
   decayModeFinding(-1),
   decayModeFindingNewDMs(-1),
-  decayModeFindingOldDMs(-1),
-  againstMuonLoose(-1),
-  againstMuonMedium(-1),
-  againstMuonTight(-1),
   againstMuonLoose3(-1),
   againstMuonTight3(-1),
-  againstElectronLoose(-1),
-  againstElectronMedium(-1),
-  againstElectronTight(-1),
-  //againstElectronMVA(-1),
-  againstElectronLooseMVA5(-1),
-  againstElectronMediumMVA5(-1),
-  againstElectronTightMVA5(-1),
+  againstElectronVLooseMVA(-1),
+  againstElectronLooseMVA(-1),
+  againstElectronMediumMVA(-1),
+  againstElectronTightMVA(-1),
+  againstElectronVTightMVA(-1),
   byLooseCombinedIsolationDeltaBetaCorr3Hits(-1),
   byMediumCombinedIsolationDeltaBetaCorr3Hits(-1),
   byTightCombinedIsolationDeltaBetaCorr3Hits(-1),
   byCombinedIsolationDeltaBetaCorrRaw3Hits(-1),
+  byVLooseIsolationMVArun2v1DBoldDMwLT(-1),
+  byLooseIsolationMVArun2v1DBoldDMwLT(-1),
+  byMediumIsolationMVArun2v1DBoldDMwLT(-1),
+  byTightIsolationMVArun2v1DBoldDMwLT(-1),
+  byVTightIsolationMVArun2v1DBoldDMwLT(-1),
   chargedIsoPtSum(-1),
   neutralIsoPtSum(-1),
   puCorrPtSum(-1),
@@ -252,6 +253,11 @@ vhtm::Muon::Muon():
   isPFMuon(false),
   isghostCleaned(false),
   passTrackerhighPtid(false),
+  isLooseMuon(false),
+  isMediumMuon(false),
+  isTightMuon(false),
+  chi2LocalPosition(999),
+  trkKink(-999),
   eta(-999),
   phi(-999),
   pt(-999),
@@ -263,10 +269,6 @@ vhtm::Muon::Muon():
   muonBestTrackType(-999),
   globalChi2(9999.),
   tkNChi2(9999.),
-  trkIso(-999),
-  ecalIso(-999),
-  hcalIso(-999),
-  hoIso(-999),
   pfChargedIsoR03(-999),
   pfChargedHadIsoR03(999.),
   pfNeutralHadIsoR03(999.),
@@ -454,56 +456,7 @@ vhtm::Photon::Photon():
   dEtaTracksAtEcal(-999),
   selbit(0) {}
 
-
-vhtm::SelectedEvent::SelectedEvent() : 
-      run(0),
-      lumi(0),
-      event(0),
-      mass4l(0.),
-      mZ1(0.),
-      mZ2(0.),
-      nJets(0),
-      jet1pt(0.),
-      jet2pt(0.),
-      category(0),
-      m4lRefit(0.),
-      m4lRefitError(0.),
-      weight(0.),
-      flavour(4)	
-{
-      kd["Dgg10_VAMCFM"] = -1.; 
-      kd["D_bkg_kin"] = -1.; 
-      kd["D_bkg"] = -1.; 
-      kd["D_g4"] = -1.; 
-      kd["Djet_VAJHU"] = -1.;
-}
-
-void vhtm::SelectedEvent::reset() 
-{
-      run = 0;
-      lumi = 0;
-      event = 0;
-      mass4l = 0.;
-      mZ1 = 0.;
-      mZ2 = 0.;
-      nJets = 0.;
-      jet1pt = 0.;
-      jet2pt = 0.;
-      category = 0;
-      m4lRefit = 0.;
-      m4lRefitError = 0.;
-      weight = 0.;
-      kd["Dgg10_VAMCFM"] = -1.; 
-      kd["D_bkg_kin"] = -1.; 
-      kd["D_bkg"] = -1.; 
-      kd["D_g4"] = -1.; 
-      kd["Djet_VAJHU"] = -1.;
-      flavour = 4;
-}
-
 vhtm::ZtnP::ZtnP() 
 {
 
 }
-
-
