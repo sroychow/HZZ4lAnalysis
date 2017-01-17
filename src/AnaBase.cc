@@ -873,16 +873,21 @@ void AnaBase::findLLTGenInfo(vector<GenParticle>& genMuList, vector<GenParticle>
 int AnaBase::getMotherId(const GenParticle& gp, int& mmid) const {
   int pdgid = gp.pdgId;
   vector<int> m = gp.motherIndices;
+//std::cout << "MMID P1:mvec size=" << m.size() << std::endl;
   if (m.size() < 1) return -1;
   int indx = m.at(0);
   GenParticle& mgp = genParticleList_->at(indx);
   mmid = mgp.pdgId;
+//std::cout << "MMID P2:mvec size/Mindx=" << m.size() << "\t" << indx << std::endl;
   while (mmid == pdgid) {
     m = mgp.motherIndices;
+//std::cout << "MMID P2a:mvec size=" << m.size() << std::endl;
+    if(m.size() < 1)    break;
     indx = m.at(0);
     mgp = genParticleList_->at(indx);
     mmid = mgp.pdgId;
   }
+//std::cout << "MMID P3:mindx//mmid="<< indx << "\t" << mmid << std::endl;
   return indx;
 }
 void AnaBase::dumpGenInfo(ostream& os) const {
@@ -1277,11 +1282,11 @@ int AnaBase::GenLevelMatching( const TLorentzVector& DetObj, const std::vector<v
 }
 
 int AnaBase::GenLevelMatching(const TLorentzVector& DetObj, const std::vector<vhtm::GenParticle>& genList, TLorentzVector& matchedGenP4, int& mid) {
-  if (!genList.size())
-    return -1;
+  if(!genList.size())    return -1;
   int id = -1;
-  double drmin = 999;
+  double drmin = 999.;
   unsigned int matchedGenidx = -1;
+ //std::cout << "Gen Point 1 " << std::endl;   
   for (unsigned int i=0; i < genList.size(); ++i ) {
     const GenParticle& gp = genList.at(i);
     TLorentzVector GenObj;
@@ -1293,12 +1298,17 @@ int AnaBase::GenLevelMatching(const TLorentzVector& DetObj, const std::vector<vh
       matchedGenidx = i;
     }
   }
+ //std::cout << "Gen Point 2 " << std::endl;   
+ //std::cout << "Matched index=" << matchedGenidx << std::endl;
   if((drmin < 0.1)) {
     const auto& matchedgp = genList.at(matchedGenidx);
+ //std::cout << "Gen Point 2a " << std::endl;   
     matchedGenP4 = HZZ4lUtil::getP4(matchedgp);
     getMotherId(matchedgp, mid);
+ //std::cout << "Gen Point 2b " << std::endl;   
     //std::cout << "MID = " << mid << std::endl;   
   }  
+ //std::cout << "Gen Point 3 " << std::endl;   
   return ((drmin < 0.1) ? id : -1);
 }
 

@@ -17,7 +17,8 @@ SOFLAGS  = -shared
 CXXFLAGS = -I./interface -I./
 
 CXX       = g++
-CXXFLAGS += -g -Wall -Wno-deprecated 
+CXXFLAGS += -g -Wno-all -Wno-unused-variable
+#-Wall -Wno-deprecated 
 LIBS = 
 HDRS_DICT = interface/PhysicsObjects.h interface/LinkDef.h
 

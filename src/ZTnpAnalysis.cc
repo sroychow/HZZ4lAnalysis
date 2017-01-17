@@ -275,16 +275,20 @@ void ZTnpAnalysis::eventLoop()
     AnaUtil::fillHist1D("evtCutFlow", 3, puevWt_);
     
     // main analysis object selection
+    //std::cout << "Before Finding Objects!!!" << std::endl;
     findObjects(puevWt_);
+    //std::cout << "After Finding Objects!!!" << std::endl;
     ///std::cout << "P1\n";
     histf()->cd("ZTnpAnalysis");
     tightMuon_ = getTightMuPhotonPairList();
+    //std::cout << "After getting muons!!!" << std::endl;
     if(tightMuon_.size() < 2)         continue;
     AnaUtil::fillHist1D("evtCutFlow", 4, puevWt_);   
     findTriggerObjectInfo(tObj_);
     //std::cout << "P2\n";
     //dumpTriggerObjectInfo(tObj_);
     fsrPVec_ = getFSRPhotonVec();
+    //std::cout << "After getting fsr!!!" << std::endl;
     nTnP = 0;
     run = eventColl()->at(0).run;
     event = eventColl()->at(0).event;
@@ -294,7 +298,12 @@ void ZTnpAnalysis::eventLoop()
       isData = 0;
     }
     else isData = 1;
+     
+     
+    std::cout << "Before z pair selection!!!" << std::endl;
     getZtnPpair();
+    std::cout << "After z pair selection!!!" << std::endl;
+
     //std::cout << "P3\n";
     outTree_->Fill();
     //std::cout << "P4\n"; 
@@ -305,24 +314,52 @@ void ZTnpAnalysis::eventLoop()
 void ZTnpAnalysis::getZtnPpair() {
   int n = 0;
   std::vector<vhtm::ZtnP>  zvec;
+  std::cout << "Entered z pair selection!!!" << std::endl;
+  /*  
+  std::cout << "Vector sizes>>Muon//TrigObj//GenPart//fsr//>>!!!" << tightMuon_.size() << "\t" << tObj_.size() << "\t" 
+              <<  genObj_.size() << "\t" << fsrPVec_.size() << std::endl;
+
+  for(unsigned int i = 0; i < tightMuon_.size(); ++i) {
+   TLorentzVector tP4 = HZZ4lUtil::getP4(tightMuon_[i].first);
+   TLorentzVector fP4;
+   fP4.SetPtEtaPhiE(0.,0.,0.,0.);
+   if(!tightMuon_[i].second.empty()) fP4 = HZZ4lUtil::getP4(tightMuon_[i].second.at(0));
+   std::cout << "Index//MuonPt//FSRVecSize//FSRPt>>>" << i << "\t" << tP4.Pt() << "\t" << tightMuon_[i].second.size() << "\t" << fP4.Pt() << std::endl;
+   std::cout << "RElISO=" << HZZ4lUtil::computeMuonReliso(tightMuon_[i].first, fsrPVec_, 0.01, 0.3) << std::endl;
+  int matchedidx;
+  bool tM = matchTriggerObject(tObj_, tP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02 || matchTriggerObject(tObj_, tP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02;
+  std::cout << "TrigMatched=" << tM << std::endl; 
+
+          TLorentzVector genP4;
+        int mid = 0;
+        int genId = GenLevelMatching(tP4, genObj_, genP4, mid);
+  std::cout << "Gen Matchi>>genId//mid=" << genId << "\t" << mid << std::endl;
+  }
+  */
   for (unsigned int i = 0; i < tightMuon_.size(); ++i) {
     const auto& tagmu = tightMuon_[i].first;
     TLorentzVector tagP4 = HZZ4lUtil::getP4(tagmu);
     TLorentzVector tagP4wfsr = tagP4;
+    //std::cout << "P1\n";
     bool taghasfsr = false;
     if(!tightMuon_[i].second.empty()) { 
       tagP4wfsr += HZZ4lUtil::getP4(tightMuon_[i].second.at(0));
       taghasfsr = true;
     }
+    //std::cout << "P2\n";
     if(tagP4.Pt() <= 20.)    continue;  
     double tagiso = HZZ4lUtil::computeMuonReliso(tagmu, fsrPVec_, 0.01, 0.3);   
     if (tagiso >= 0.35) continue; // it is already scaled by pT
+    //std::cout << "P3\n";
+
     int matchedidx;
     bool trigMatched = matchTriggerObject(tObj_, tagP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
-    || matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
-    || matchTriggerObject(tObj_, tagP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02
-    || matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu22_v", 0, 30,matchedidx) < 0.02;
+    //|| matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
+    || matchTriggerObject(tObj_, tagP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02;
+    //|| matchTriggerObject(tObj_, tagP4, "HLT_IsoTkMu22_v", 0, 30,matchedidx) < 0.02;
     if (!trigMatched) continue; // it is already scaled by pT
+
+    //std::cout << "P4\n";
 
     for (unsigned int j = i+1; j < tightMuon_.size(); ++j) {
       const auto& probemu = tightMuon_[j].first;
@@ -336,10 +373,14 @@ void ZTnpAnalysis::getZtnPpair() {
         probeP4wfsr += HZZ4lUtil::getP4(tightMuon_[j].second.at(0));
         probehasfsr = true;
       }
+    //std::cout << "P5\n";
+
       double probeiso = HZZ4lUtil::computeMuonReliso(probemu, fsrPVec_, 0.01, 0.3); 
       //compute TnP pair P4
       TLorentzVector tnpP4 = tagP4 + probeP4;
       TLorentzVector tnpP4wfsr = tagP4wfsr + probeP4wfsr;
+    //std::cout << "P6\n";
+
       vhtm::ZtnP ztemp;
       ztemp.TnP_pt = tnpP4.Pt();
       //Fill TnP pair property
@@ -376,6 +417,8 @@ void ZTnpAnalysis::getZtnPpair() {
       ztemp.TnP_l1_relIsoAfterFSR = tagiso;   
       ztemp.TnP_l1_chargedHadIso03 = tagmu.pfChargedHadIsoR03;   
       ztemp.TnP_l1_hasOwnFSR  = taghasfsr; //doubt
+   // std::cout << "P7\n";
+
       if(isMC()) {
         TLorentzVector genP4;
         int mid = 0;
@@ -387,7 +430,7 @@ void ZTnpAnalysis::getZtnPpair() {
           ztemp.TnP_l1_mcPt = 0.;
           ztemp.TnP_l1_mcPt1 = 0.;
         } else {
-          //if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
+         // if(abs(mid) != 23)   std::cout << "MIDMatched=" << mid << std::endl;
           ztemp.TnP_l1_mcMatchId = mid;
           ztemp.TnP_l1_mcMatchAny = 1;
           ztemp.TnP_l1_mcPt = genP4.Pt();
@@ -445,6 +488,8 @@ void ZTnpAnalysis::getZtnPpair() {
           ztemp.TnP_l2_mcPt1 = genP4.Pt();
         }
       }
+   // std::cout << "P8\n";
+
       ztemp.TnP_l2_hlt1L = matchTriggerObject(tObj_, probeP4, "HLT_IsoMu20_v", 0, 30,matchedidx) < 0.02
                            || matchTriggerObject(tObj_, probeP4, "HLT_IsoTkMu20_v", 0, 30,matchedidx) < 0.02
                            || matchTriggerObject(tObj_, probeP4, "HLT_IsoMu22_v", 0, 30,matchedidx) < 0.02
@@ -457,6 +502,9 @@ void ZTnpAnalysis::getZtnPpair() {
       zvec.push_back(ztemp);
     }
   }
+
+//std::cout << "End of pair sel>>now saving in array.\n";
+
   nTnP = n;
   for(int i = 0; i<n; i++) {
     if(i>=10)   continue;
@@ -542,7 +590,9 @@ void ZTnpAnalysis::getZtnPpair() {
     TnP_l2_p4WithFSR_phi[i] = zvec[i].TnP_l2_p4WithFSR_phi;   
     TnP_l2_p4WithFSR_mass[i] = zvec[i].TnP_l2_p4WithFSR_mass;
   }
-  //std::cout << "NTnP=" << n << std::endl;
+//std::cout << "End of saving in array.\n";
+std::cout << "NTnP=" << n << std::endl;
+
 }
 void ZTnpAnalysis::endJob() {
   closeFiles();
